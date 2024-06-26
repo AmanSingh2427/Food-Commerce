@@ -1,13 +1,15 @@
 import React, { useState, useEffect } from 'react';
-import { Link } from 'react-router-dom';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaBell } from 'react-icons/fa';
 import axios from 'axios';
+// import { useNavigate } from 'react-router-dom';
 
 const Navbar = ({ toggleTableDisplay }) => {
   const username = localStorage.getItem('username');
   const userImage = localStorage.getItem('userImage');
   const [pendingUsers, setPendingUsers] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchPendingUsers = async () => {
@@ -30,6 +32,10 @@ const Navbar = ({ toggleTableDisplay }) => {
     localStorage.removeItem('username');
     localStorage.removeItem('userImage');
     window.location.href = '/login';
+  };
+
+  const handleOrderRequestsClick = () => {
+    navigate('/order-request');
   };
 
   return (
@@ -82,6 +88,12 @@ const Navbar = ({ toggleTableDisplay }) => {
                   </div>
                 )}
               </div>
+              <button
+                onClick={handleOrderRequestsClick}
+                className="text-green-400 hover:text-green-700 transition-colors"
+              >
+                Order Requests
+              </button>
               <button
                 onClick={handleLogout}
                 className="text-red-400 hover:text-red-700 transition-colors"

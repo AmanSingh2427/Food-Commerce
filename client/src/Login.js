@@ -11,32 +11,33 @@ const LoginForm = () => {
   const [isOtpSent, setIsOtpSent] = useState(false);
   const navigate = useNavigate();
 
- const handleLoginSubmit = async (e) => {
-  e.preventDefault();
-  try {
-    const response = await axios.post('http://localhost:5000/login', { username, password });
-    localStorage.setItem('token', response.data.token);
-    localStorage.setItem('username', username);
-    localStorage.setItem('userImage', response.data.userImage);
-    localStorage.setItem('role', response.data.role); // Store user role in local storage
-    console.log(response.data.token);
-    console.log(username);
-    console.log(response.data.userImage);
-    console.log(response.data.role);
+  const handleLoginSubmit = async (e) => {
+    e.preventDefault();
+    try {
+      const response = await axios.post('http://localhost:5000/login', { username, password });
+      localStorage.setItem('userId', response.data.id); // Save user ID in local storage
+      localStorage.setItem('token', response.data.token);
+      localStorage.setItem('username', username);
+      localStorage.setItem('userImage', response.data.userImage);
+      localStorage.setItem('role', response.data.role);
+      localStorage.setItem('email', response.data.email);
+      console.log(response.data.token);
+      console.log(response.data.id);
+      console.log(username);
+      console.log(response.data.userImage);
+      console.log(response.data.role);
+      console.log(response.data.email);
       
-
-    if (response.data.role === 'admin') {
-      navigate('/adminhome'); // Redirect admin to adminhome
-    } else {
-      navigate('/home'); // Redirect normal user to home
+      if (response.data.role === 'admin') {
+        navigate('/adminhome'); // Redirect admin to adminhome
+      } else {
+        navigate('/home'); // Redirect normal user to home
+      }
+    } catch (error) {
+      console.error(error.response.data.message);
+      alert(error.response.data.message); // Show error message
     }
-  } catch (error) {
-    console.error(error.response.data.message);
-    alert(error.response.data.message); // Show error message
-  }
-};
-
-
+  };
 
   const handleForgotPasswordSubmit = async (e) => {
     e.preventDefault();

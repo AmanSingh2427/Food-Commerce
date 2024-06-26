@@ -12,6 +12,10 @@ import AdminHome from './AdminHome';
 import NotAuthorized from './NotAuthorized'; // Import the NotAuthorized component
 import ProductsTable from './components/ProductsTable';
 import UpdateProduct from './components/UpdateProduct';
+import Cart from './components/Cart';
+import ProductProcessing from './components/ProductProcessing';
+import OrderRequest from './components/OrderRequest';
+import PurchaseHistory from './components/PurchaseHistory';
 
 const App = () => {
   const token = localStorage.getItem('token');
@@ -35,6 +39,10 @@ const App = () => {
 
           <Route path="/notauthorized" element={<NotAuthorized />} /> {/* Add the NotAuthorized route */}
           <Route path="/products" element={<PrivateRoute><ProductsTable /></PrivateRoute>} />
+          <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
+          <Route path="/product-processing" element={<PrivateRoute><ProductProcessing /></PrivateRoute>} />
+          <Route path="/order-request" element={<PrivateRoute><OrderRequest /></PrivateRoute>} />
+          <Route path="/purchase-history" element={<PrivateRoute><PurchaseHistory /></PrivateRoute>} />
 
           
           <Route path="/" element={<Navigate to={token ? (userRole === 'admin' ? '/adminhome' : '/home') : '/login'} />} /> {/* Default route */}

@@ -1,14 +1,34 @@
-import React from 'react';
+import React, { useEffect, useState } from 'react';
 import { Link } from 'react-router-dom';
+import { FaShoppingCart } from 'react-icons/fa';
+import axios from 'axios';
 
 const Navbar = () => {
+  const [cartCount, setCartCount] = useState(0);
   const username = localStorage.getItem('username');
   const userImage = localStorage.getItem('userImage');
+  const userId = localStorage.getItem('userId');
+
+  useEffect(() => {
+    const fetchCartCount = async () => {
+      try {
+        const response = await axios.get(`http://localhost:5000/cart/${userId}`);
+        setCartCount(response.data.length);
+      } catch (error) {
+        console.error('Error fetching cart count:', error);
+      }
+    };
+
+    if (userId) {
+      fetchCartCount();
+    }
+  }, [userId]);
 
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
     localStorage.removeItem('userImage');
+    localStorage.removeItem('userId');
     window.location.href = '/login';
   };
 
@@ -36,6 +56,12 @@ const Navbar = () => {
               >
                 Logout
               </button>
+              <Link to="/cart" className="relative">
+                <FaShoppingCart className="text-white text-2xl" />
+                {cartCount > 0 && (
+                  <span className="absolute top-0 right-0 bg-red-500 text-white rounded-full w-5 h-5 text-xs flex items-center justify-center">{cartCount}</span>
+                )}
+              </Link>
             </>
           ) : (
             <Link to="/login" className="text-white">Login</Link>

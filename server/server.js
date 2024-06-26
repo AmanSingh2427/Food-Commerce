@@ -82,6 +82,8 @@ app.get('/adminhome', checkAdminRole, (req, res) => {
   res.send('Welcome to the Admin Home Page');
 });
 
+
+
 // Other routes (signup, login, etc.) go here
 app.post('/signup', (req, res) => {
   upload(req, res, async (err) => {
@@ -208,19 +210,13 @@ app.post('/login', async (req, res) => {
 
     const token = jwt.sign({ userId: user.rows[0].id }, 'your_secret_key');
 
-    if (user.rows[0].role === 'admin') {
-      return res.json({ 
-        token, 
-        userImage: user.rows[0].image,
-        role: 'admin'
-      });
-    } else {
-      return res.json({ 
-        token, 
-        userImage: user.rows[0].image,
-        role: 'user'
-      });
-    }
+    return res.json({ 
+      id: user.rows[0].id,
+      token, 
+      userImage: user.rows[0].image,
+      role: user.rows[0].role,
+      email: user.rows[0].email
+    });
   } catch (err) {
     console.error(err.message);
     res.status(500).send('Server error');
@@ -491,6 +487,304 @@ app.delete('/products/:id', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
+// Endpoint to add an item to the cart
+app.post('/add-to-cart', async (req, res) => {
+  const { userId, productId, quantity } = req.body;
+
+  // Input validation
+  if (!userId || !productId) {
+    return res.status(400).send('Please provide user ID and product ID');
+  }
+
+  try {
+    // Check if the product already exists in the cart for the user
+    const existingCartItem = await pool.query(
+      'SELECT * FROM aman.cart WHERE user_id = $1 AND product_id = $2',
+      [userId, productId]
+    );
+
+    if (existingCartItem.rows.length > 0) {
+      // Update the quantity if the product already exists in the cart
+      const newQuantity = existingCartItem.rows[0].quantity + (quantity || 1);
+      const updatedCartItem = await pool.query(
+        'UPDATE aman.cart SET quantity = $1 WHERE user_id = $2 AND product_id = $3 RETURNING *',
+        [newQuantity, userId, productId]
+      );
+      res.json(updatedCartItem.rows[0]);
+    } else {
+      // Insert the product if it doesn't exist in the cart
+      const newCartItem = await pool.query(
+        'INSERT INTO aman.cart (user_id, product_id, quantity) VALUES ($1, $2, $3) RETURNING *',
+        [userId, productId, quantity || 1]
+      );
+      res.json(newCartItem.rows[0]);
+    }
+  } catch (err) {
+    console.error('Database error:', err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// Endpoint to fetch cart items for a user
+app.get('/cart/:userId', async (req, res) => {
+  const { userId } = req.params;
+
+  try {
+    const cartItems = await pool.query(
+      `SELECT aman.cart.id, aman.products.name, aman.products.price, aman.products.photo, aman.cart.quantity, aman.cart.added_at 
+      FROM aman.cart 
+      JOIN aman.products ON aman.cart.product_id = aman.products.id 
+      WHERE aman.cart.user_id = $1`,
+      [userId]
+    );
+    res.json(cartItems.rows);
+  } catch (err) {
+    console.error('Database error:', err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// Endpoint to update the quantity of a cart item
+app.put('/cart/:userId/:itemId', async (req, res) => {
+  const { userId, itemId } = req.params;
+  const { quantity } = req.body;
+
+  if (quantity < 1) {
+    return res.status(400).send('Quantity must be at least 1');
+  }
+
+  try {
+    const updatedCartItem = await pool.query(
+      'UPDATE aman.cart SET quantity = $1 WHERE user_id = $2 AND id = $3 RETURNING *',
+      [quantity, userId, itemId]
+    );
+    if (updatedCartItem.rows.length === 0) {
+      return res.status(404).send('Cart item not found');
+    }
+    res.json(updatedCartItem.rows[0]);
+  } catch (err) {
+    console.error('Database error:', err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+// Endpoint to remove a cart item
+app.delete('/cart/:userId/:itemId', async (req, res) => {
+  const { userId, itemId } = req.params;
+
+  try {
+    const deletedCartItem = await pool.query(
+      'DELETE FROM aman.cart WHERE user_id = $1 AND id = $2 RETURNING *',
+      [userId, itemId]
+    );
+    if (deletedCartItem.rows.length === 0) {
+      return res.status(404).send('Cart item not found');
+    }
+    res.json(deletedCartItem.rows[0]);
+  } catch (err) {
+    console.error('Database error:', err.message);
+    res.status(500).send('Server error');
+  }
+});
+
+
+// Place order endpoint
+app.post('/place-order/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+      // Update delivered column to false for the user's cart items
+      await pool.query('UPDATE aman.cart SET delivered = false WHERE user_id = $1', [userId]);
+
+      res.status(200).json({ message: 'Order placed successfully' });
+  } catch (err) {
+      console.error('Error placing order:', err);
+      res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
+
+app.get('/pending-orders/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+    const result = await pool.query(`
+      SELECT 
+        c.id,
+        c.product_id,
+        c.quantity,
+        p.photo AS photo,
+        p.name,
+        p.price
+      FROM aman.cart c
+      JOIN aman.products p ON c.product_id = p.id
+      WHERE c.user_id = $1 AND c.delivered = false
+    `, [userId]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching pending orders:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+
+app.get('/pending-orders', async (req, res) => {
+  try {
+    const result = await pool.query(`
+      SELECT 
+        c.id,
+        c.user_id,
+        c.product_id,
+        c.quantity,
+        p.photo AS photo,
+        p.name,
+        p.price
+      FROM aman.cart c
+      JOIN aman.products p ON c.product_id = p.id
+      WHERE c.delivered = false
+    `);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching pending orders:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// Endpoint to delete all orders for a user
+app.delete('/orders/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+      await pool.query('DELETE FROM aman.cart WHERE user_id = $1', [userId]);
+      res.status(200).send('All orders deleted successfully');
+  } catch (error) {
+      console.error('Error deleting orders:', error);
+      res.status(500).send('Error deleting orders');
+  }
+});
+
+// Endpoint to update the status of all orders for a user to 'user cancelled'
+app.put('/orders/cancel/:userId', async (req, res) => {
+  const { userId } = req.params;
+  try {
+      await pool.query('UPDATE aman.order_history SET status = $1 WHERE user_id = $2', ['user cancelled', userId]);
+      res.status(200).send('All orders cancelled successfully');
+  } catch (error) {
+      console.error('Error cancelling orders:', error);
+      res.status(500).send('Error cancelling orders');
+  }
+});
+
+// Accept orders route
+app.put('/users/:userId/accept-orders', async (req, res) => {
+  const userId = req.params.userId;
+  // console.log(`User ID: ${userId}`);
+
+  try {
+    // Fetch orders for the user from products table
+    const ordersResult = await pool.query('SELECT id, quantity FROM aman.cart WHERE user_id = $1', [userId]);
+    // console.log('Orders:', ordersResult.rows);
+
+    const orders = ordersResult.rows;
+
+    if (orders.length === 0) {
+      return res.status(404).json({ success: false, message: 'No orders found for the user' });
+    }
+
+    // Update aman.cart to mark orders as delivered
+    await pool.query('UPDATE aman.cart SET delivered = true WHERE user_id = $1', [userId]);
+
+    // Delete orders from aman.cart for the user
+    await pool.query('DELETE FROM aman.cart WHERE user_id = $1', [userId]);
+
+    // Prepare order history entries with correct order_id, user_id, quantity, and status
+    const orderHistory = orders.map(order => ({
+      order_id: order.id,
+      user_id: userId,
+      quantity: order.quantity,
+      status: 'accepted',
+    }));
+
+    // Generate the values part of the INSERT INTO query
+    const values = orderHistory.map(order => `(${order.order_id}, ${order.user_id}, ${order.quantity}, '${order.status}')`).join(',');
+
+    // Construct the final INSERT INTO query for order_history table
+    const insertQuery = `INSERT INTO aman.order_history (order_id, user_id, quantity, status) VALUES ${values}`;
+    // console.log('Insert Query:', insertQuery);
+
+    // Execute the INSERT INTO query
+    await pool.query(insertQuery);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ success: false, error: 'Error updating orders' });
+  }
+});
+
+
+
+
+// Route to cancel orders for a user
+app.put('/users/:userId/cancel-orders', async (req, res) => {
+  const userId = req.params.userId;
+  // console.log(`User ID: ${userId}`);
+
+  try {
+    // Fetch orders for the user from products table
+    const ordersResult = await pool.query('SELECT id, quantity FROM aman.cart WHERE user_id = $1', [userId]);
+    // console.log('Orders:', ordersResult.rows);
+
+    const orders = ordersResult.rows;
+
+    if (orders.length === 0) {
+      return res.status(404).json({ success: false, message: 'No orders found for the user' });
+    }
+
+    // Delete orders from aman.cart for the user
+    await pool.query('DELETE FROM aman.cart WHERE user_id = $1', [userId]);
+
+    // Prepare order history entries with correct order_id, user_id, quantity, and status
+    const orderHistory = orders.map(order => ({
+      order_id: order.id,
+      user_id: userId,
+      quantity: order.quantity,
+      status: 'cancelled from admin',
+    }));
+
+    // Generate the values part of the INSERT INTO query
+    const values = orderHistory.map(order => `(${order.order_id}, ${order.user_id}, ${order.quantity}, '${order.status}')`).join(',');
+
+    // Construct the final INSERT INTO query for order_history table
+    const insertQuery = `INSERT INTO aman.order_history (order_id, user_id, quantity, status) VALUES ${values}`;
+    // console.log('Insert Query:', insertQuery);
+
+    // Execute the INSERT INTO query
+    await pool.query(insertQuery);
+
+    res.json({ success: true });
+  } catch (error) {
+    console.error('Error:', error);
+    res.status(500).json({ success: false, error: 'Error canceling orders' });
+  }
+});
+
+
+// Endpoint to fetch order history for a specific user
+app.get('/order-history/:userId', async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    // Fetch order history for the user
+    const ordersResult = await pool.query('SELECT * FROM aman.order_history WHERE user_id = $1 ORDER BY created_at DESC', [userId]);
+    const orders = ordersResult.rows;
+
+    res.json(orders);
+  } catch (error) {
+    console.error('Error fetching order history:', error);
+    res.status(500).json({ success: false, error: 'Error fetching order history' });
+  }
+});
+
 
 
 app.get('/', (req, res) => {

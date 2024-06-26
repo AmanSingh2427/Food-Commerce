@@ -10,7 +10,7 @@ const Home = () => {
     <>
     {/* <Dashboard/> */}
     <div className=''>
-    <Navbar/>
+    {/* <Navbar/> */}
     <Products/>
     </div>
     {/* <div className="flex justify-center items-center h-screen bg-gray-100 ml-80">
