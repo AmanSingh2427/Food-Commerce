@@ -11,6 +11,7 @@ const UpdateProduct = () => {
     name: '',
     price: '',
     description: '',
+    category: '', // Add category field here
     photo: ''
   });
   const [image, setImage] = useState(null);
@@ -47,15 +48,16 @@ const UpdateProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!product.name || !product.price || !product.description) {
+    if (!product.name || !product.price || !product.description || !product.category) {
       alert('Please fill in all required fields');
       return;
     }
-  
+
     const formData = new FormData();
     formData.append('name', product.name);
     formData.append('price', product.price);
     formData.append('description', product.description);
+    formData.append('category', product.category); // Add category to formData
     if (image) {
       formData.append('photo', image);
     }
@@ -73,7 +75,6 @@ const UpdateProduct = () => {
       console.error('Error updating product:', err);
     }
   };
-  
 
   return (
     <div className="container mx-auto mt-8">
@@ -90,6 +91,21 @@ const UpdateProduct = () => {
         <div className="mb-4">
           <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description:</label>
           <textarea id="description" name="description" value={product.description} onChange={handleChange} className="border border-gray-300 rounded-md p-2 w-full"></textarea>
+        </div>
+        <div className="mb-4">
+          <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category:</label>
+          <select id="category" name="category" value={product.category} onChange={handleChange} className="border border-gray-300 rounded-md p-2 w-full">
+            <option value="">Select a category</option>
+            <option value="Appetizers">Appetizers</option>
+            <option value="Main Courses">Main Courses</option>
+            <option value="Entrees">Entrees</option>
+            <option value="Desserts">Desserts</option>
+            <option value="Beverages">Beverages</option>
+            <option value="Specialty Items">Specialty Items</option>
+            <option value="Kids' Menu">Kids' Menu</option>
+            <option value="Seasonal Specials">Seasonal Specials</option>
+            <option value="Healthy Options">Healthy Options</option>
+          </select>
         </div>
         <div className="mb-4">
           <label htmlFor="photo" className="block text-sm font-medium text-gray-700">Photo:</label>

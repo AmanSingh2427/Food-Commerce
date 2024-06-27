@@ -16,6 +16,7 @@ import Cart from './components/Cart';
 import ProductProcessing from './components/ProductProcessing';
 import OrderRequest from './components/OrderRequest';
 import PurchaseHistory from './components/PurchaseHistory';
+import CreateProductForm from './components/CreateProductForm';
 
 const App = () => {
   const token = localStorage.getItem('token');
@@ -39,6 +40,7 @@ const App = () => {
 
           <Route path="/notauthorized" element={<NotAuthorized />} /> {/* Add the NotAuthorized route */}
           <Route path="/products" element={<PrivateRoute><ProductsTable /></PrivateRoute>} />
+          <Route path="/create-product" element={<PrivateRoute><CreateProductForm /></PrivateRoute>} />
           <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
           <Route path="/product-processing" element={<PrivateRoute><ProductProcessing /></PrivateRoute>} />
           <Route path="/order-request" element={<PrivateRoute><OrderRequest /></PrivateRoute>} />

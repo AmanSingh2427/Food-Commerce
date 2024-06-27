@@ -1,5 +1,3 @@
-// src/components/Products.js
-
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import Navbar from './Navbar';
@@ -55,6 +53,7 @@ const Products = () => {
               />
               <h3 className="text-lg font-bold mb-2">{product.name}</h3>
               <p className="text-gray-600 text-sm mb-2">{product.description}</p>
+              <p className="text-gray-600 text-sm mb-2">Category: {product.category}</p> {/* Display category */}
               <p className="text-lg font-bold mb-2">${product.price}</p>
               <button
                 onClick={() => handleAddToCart(product.id)}

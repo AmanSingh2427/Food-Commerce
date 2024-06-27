@@ -384,18 +384,18 @@ const uploads = multer({ storage: storage });
 
 //create new product by admin
 app.post('/create-product', uploads.single('photo'), async (req, res) => {
-  const { name, price, description } = req.body;
+  const { name, price, description, category } = req.body;
   const photo = req.file ? req.file.filename : null;
 
   // Input validation
-  if (!name || !price || !description) {
+  if (!name || !price || !description || !category) {
     return res.status(400).send('Please provide all required fields');
   }
 
   try {
     const newProduct = await pool.query(
-      'INSERT INTO aman.products (name, price, photo, description) VALUES ($1, $2, $3, $4) RETURNING *',
-      [name, price, photo, description]
+      'INSERT INTO aman.products (name, price, photo, description, category) VALUES ($1, $2, $3, $4, $5) RETURNING *',
+      [name, price, photo, description, category]
     );
     res.json(newProduct.rows[0]);
   } catch (err) {
@@ -405,15 +405,18 @@ app.post('/create-product', uploads.single('photo'), async (req, res) => {
 });
 
 
+// server.js or routes/products.js
+
 app.get('/products', async (req, res) => {
   try {
-    const result = await pool.query('SELECT * FROM aman.products');
+    const result = await pool.query('SELECT id, name, price, description, photo, category FROM aman.products');
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching products:', err);
     res.status(500).send('Server error');
   }
 });
+
 
 // Fetch a product by ID
 app.get('/products/:id', async (req, res) => {
@@ -435,29 +438,24 @@ app.get('/products/:id', async (req, res) => {
 // Update a product by ID with image upload
 app.put('/products/:id', (req, res) => {
   upload(req, res, async (err) => {
-    // if (err) {
-    //   console.error('File upload error:', err);
-    //   return res.status(400).send({ message: err });
-    // }
-
     const { id } = req.params;
-    const { name, price, description } = req.body;
+    const { name, price, description, category } = req.body;
     let photo = req.file ? req.file.path : null;
-    console.log(name, price, description, photo);
+    // console.log(name, price, description, category, photo);
 
-    if (!name || !price || !description) {
-      return res.status(400).send({ message: 'Name, price, and description are required' });
+    if (!name || !price || !description || !category) {
+      return res.status(400).send({ message: 'Name, price, description, and category are required' });
     }
 
     try {
-      let updateQuery = 'UPDATE aman.products SET name = $1, price = $2, description = $3';
-      let queryParams = [name, price, description];
+      let updateQuery = 'UPDATE aman.products SET name = $1, price = $2, description = $3, category = $4';
+      let queryParams = [name, price, description, category];
 
       if (photo) {
-        updateQuery += ', photo = $4 WHERE id = $5';
+        updateQuery += ', photo = $5 WHERE id = $6';
         queryParams.push(photo, id);
       } else {
-        updateQuery += ' WHERE id = $4';
+        updateQuery += ' WHERE id = $5';
         queryParams.push(id);
       }
 
@@ -474,6 +472,7 @@ app.put('/products/:id', (req, res) => {
     }
   });
 });
+
 
 
 // Delete a product by ID
