@@ -3,15 +3,19 @@ import axios from 'axios';
 
 const ProductProcessing = () => {
     const [pendingOrders, setPendingOrders] = useState([]);
+    const [loading, setLoading] = useState(false);
     const userId = localStorage.getItem('userId');
 
     useEffect(() => {
         const fetchPendingOrders = async () => {
+            setLoading(true);
             try {
                 const response = await axios.get(`http://localhost:5000/pending-orders/${userId}`);
                 setPendingOrders(response.data);
             } catch (error) {
                 console.error('Error fetching pending orders:', error);
+            } finally {
+                setLoading(false);
             }
         };
 
@@ -32,7 +36,9 @@ const ProductProcessing = () => {
     return (
         <div className="container mx-auto mt-8 flex flex-col items-center justify-center">
             <h2 className="text-2xl font-bold mb-4">Product Processing</h2>
-            {pendingOrders.length > 0 ? (
+            {loading ? (
+                <p className="text-gray-700 text-center">Loading...</p>
+            ) : pendingOrders.length > 0 ? (
                 <div className="bg-white shadow-md rounded-lg overflow-hidden">
                     <table className="min-w-full">
                         <thead>

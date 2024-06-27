@@ -210,9 +210,9 @@ app.post('/login', async (req, res) => {
 
     const token = jwt.sign({ userId: user.rows[0].id }, 'your_secret_key');
 
-    return res.json({ 
+    return res.json({
       id: user.rows[0].id,
-      token, 
+      token,
       userImage: user.rows[0].image,
       role: user.rows[0].role,
       email: user.rows[0].email
@@ -443,7 +443,7 @@ app.put('/products/:id', (req, res) => {
     const { id } = req.params;
     const { name, price, description } = req.body;
     let photo = req.file ? req.file.path : null;
-    console.log( name, price, description,photo);
+    console.log(name, price, description, photo);
 
     if (!name || !price || !description) {
       return res.status(400).send({ message: 'Name, price, and description are required' });
@@ -589,20 +589,52 @@ app.delete('/cart/:userId/:itemId', async (req, res) => {
 });
 
 
-// Place order endpoint
+// Function to generate a random order ID
+function generateRandomOrderId() {
+  return Math.floor(Math.random() * 1000000); // Example: Generates a random number between 0 and 999999
+}
+
+// Example usage:
+const uniqueOrderId = generateRandomOrderId();
+console.log(uniqueOrderId); // Output: Example random order ID
+
+
+// Endpoint to place an order and update order history
 app.post('/place-order/:userId', async (req, res) => {
   const userId = req.params.userId;
+  const uniqueOrderId = generateRandomOrderId(); // Generate a random order ID for the entire order
 
   try {
-      // Update delivered column to false for the user's cart items
-      await pool.query('UPDATE aman.cart SET delivered = false WHERE user_id = $1', [userId]);
+    // Begin transaction
+    await pool.query('BEGIN');
 
-      res.status(200).json({ message: 'Order placed successfully' });
+    // Get all cart items for the user
+    const cartItemsResult = await pool.query('SELECT id, product_id, quantity FROM aman.cart WHERE user_id = $1', [userId]);
+    const cartItems = cartItemsResult.rows;
+
+    // Insert cart items into order_history with the same unique order ID
+    for (let item of cartItems) {
+      await pool.query(
+        'INSERT INTO aman.order_history (order_id, user_id, quantity, status, created_at, product_id) VALUES ($1, $2, $3, $4, $5, $6)',
+        [uniqueOrderId, userId, item.quantity, 'pending', new Date(), item.product_id]
+      );
+    }
+
+    // Update delivered column to false for the user's cart items
+    await pool.query('UPDATE aman.cart SET delivered = false WHERE user_id = $1', [userId]);
+
+    // Commit transaction
+    await pool.query('COMMIT');
+
+    res.status(200).json({ message: 'Order placed successfully', orderId: uniqueOrderId });
   } catch (err) {
-      console.error('Error placing order:', err);
-      res.status(500).json({ error: 'Internal server error' });
+    // Rollback transaction in case of error
+    await pool.query('ROLLBACK');
+    console.error('Error placing order:', err);
+    res.status(500).json({ error: 'Internal server error' });
   }
 });
+
 
 
 app.get('/pending-orders/:userId', async (req, res) => {
@@ -654,119 +686,111 @@ app.get('/pending-orders', async (req, res) => {
 app.delete('/orders/:userId', async (req, res) => {
   const { userId } = req.params;
   try {
-      await pool.query('DELETE FROM aman.cart WHERE user_id = $1', [userId]);
-      res.status(200).send('All orders deleted successfully');
-  } catch (error) {
-      console.error('Error deleting orders:', error);
-      res.status(500).send('Error deleting orders');
-  }
-});
-
-// Endpoint to update the status of all orders for a user to 'user cancelled'
-app.put('/orders/cancel/:userId', async (req, res) => {
-  const { userId } = req.params;
-  try {
-      await pool.query('UPDATE aman.order_history SET status = $1 WHERE user_id = $2', ['user cancelled', userId]);
-      res.status(200).send('All orders cancelled successfully');
-  } catch (error) {
-      console.error('Error cancelling orders:', error);
-      res.status(500).send('Error cancelling orders');
-  }
-});
-
-// Accept orders route
-app.put('/users/:userId/accept-orders', async (req, res) => {
-  const userId = req.params.userId;
-  // console.log(`User ID: ${userId}`);
-
-  try {
-    // Fetch orders for the user from products table
-    const ordersResult = await pool.query('SELECT id, quantity FROM aman.cart WHERE user_id = $1', [userId]);
-    // console.log('Orders:', ordersResult.rows);
-
-    const orders = ordersResult.rows;
-
-    if (orders.length === 0) {
-      return res.status(404).json({ success: false, message: 'No orders found for the user' });
-    }
-
-    // Update aman.cart to mark orders as delivered
-    await pool.query('UPDATE aman.cart SET delivered = true WHERE user_id = $1', [userId]);
+    // Begin transaction
+    await pool.query('BEGIN');
 
     // Delete orders from aman.cart for the user
     await pool.query('DELETE FROM aman.cart WHERE user_id = $1', [userId]);
 
-    // Prepare order history entries with correct order_id, user_id, quantity, and status
-    const orderHistory = orders.map(order => ({
-      order_id: order.id,
-      user_id: userId,
-      quantity: order.quantity,
-      status: 'accepted',
-    }));
+    // Update order history to mark orders as user cancelled
+    await pool.query('UPDATE aman.order_history SET status = $1 WHERE user_id = $2 AND status = $3',
+      ['user cancelled', userId, 'pending']
+    );
 
-    // Generate the values part of the INSERT INTO query
-    const values = orderHistory.map(order => `(${order.order_id}, ${order.user_id}, ${order.quantity}, '${order.status}')`).join(',');
+    // Commit transaction
+    await pool.query('COMMIT');
 
-    // Construct the final INSERT INTO query for order_history table
-    const insertQuery = `INSERT INTO aman.order_history (order_id, user_id, quantity, status) VALUES ${values}`;
-    // console.log('Insert Query:', insertQuery);
+    res.status(200).json({ success: true, message: 'All orders deleted and marked as user cancelled successfully' });
+  } catch (error) {
+    // Rollback transaction in case of error
+    await pool.query('ROLLBACK');
+    console.error('Error deleting orders:', error);
+    res.status(500).json({ success: false, error: 'Error deleting orders' });
+  }
+});
 
-    // Execute the INSERT INTO query
-    await pool.query(insertQuery);
+
+// Endpoint to update the status of all orders for a user to 'user cancelled'
+// app.put('/orders/cancel/:userId', async (req, res) => {
+//   const { userId } = req.params;
+//   try {
+//     await pool.query('UPDATE aman.order_history SET status = $1 WHERE user_id = $2', ['user cancelled', userId]);
+//     res.status(200).send('All orders cancelled successfully');
+//   } catch (error) {
+//     console.error('Error cancelling orders:', error);
+//     res.status(500).send('Error cancelling orders');
+//   }
+// });
+
+// Accept orders route
+app.put('/users/:userId/accept-orders', async (req, res) => {
+  const userId = req.params.userId;
+
+  try {
+    // Begin transaction
+    await pool.query('BEGIN');
+
+    // Update order_history to mark orders as accepted
+    const updateResult = await pool.query('UPDATE aman.order_history SET status = $1 WHERE user_id = $2 AND status = $3 RETURNING id',
+      ['accepted', userId, 'pending']
+    );
+    const updatedOrderIds = updateResult.rows.map(row => row.id);
+
+    if (updatedOrderIds.length === 0) {
+      await pool.query('ROLLBACK'); // Rollback if no pending orders found
+      return res.status(404).json({ success: false, message: 'No pending orders found for the user' });
+    }
+
+     // Delete orders from aman.cart for the user
+     await pool.query('DELETE FROM aman.cart WHERE user_id = $1', [userId]);
+
+    // Commit transaction
+    await pool.query('COMMIT');
 
     res.json({ success: true });
   } catch (error) {
+    // Rollback transaction in case of error
+    await pool.query('ROLLBACK');
     console.error('Error:', error);
     res.status(500).json({ success: false, error: 'Error updating orders' });
   }
 });
 
 
-
-
 // Route to cancel orders for a user
 app.put('/users/:userId/cancel-orders', async (req, res) => {
   const userId = req.params.userId;
-  // console.log(`User ID: ${userId}`);
 
   try {
-    // Fetch orders for the user from products table
-    const ordersResult = await pool.query('SELECT id, quantity FROM aman.cart WHERE user_id = $1', [userId]);
-    // console.log('Orders:', ordersResult.rows);
+    // Begin transaction
+    await pool.query('BEGIN');
 
-    const orders = ordersResult.rows;
+    // Update order history to mark orders as admin rejected
+    const updateResult = await pool.query('UPDATE aman.order_history SET status = $1 WHERE user_id = $2 AND status = $3 RETURNING order_id',
+      ['admin reject order', userId, 'pending']
+    );
+    const updatedOrderIds = updateResult.rows.map(row => row.order_id);
 
-    if (orders.length === 0) {
-      return res.status(404).json({ success: false, message: 'No orders found for the user' });
+    if (updatedOrderIds.length === 0) {
+      await pool.query('ROLLBACK'); // Rollback if no pending orders found
+      return res.status(404).json({ success: false, message: 'No pending orders found for the user' });
     }
 
     // Delete orders from aman.cart for the user
     await pool.query('DELETE FROM aman.cart WHERE user_id = $1', [userId]);
 
-    // Prepare order history entries with correct order_id, user_id, quantity, and status
-    const orderHistory = orders.map(order => ({
-      order_id: order.id,
-      user_id: userId,
-      quantity: order.quantity,
-      status: 'cancelled from admin',
-    }));
-
-    // Generate the values part of the INSERT INTO query
-    const values = orderHistory.map(order => `(${order.order_id}, ${order.user_id}, ${order.quantity}, '${order.status}')`).join(',');
-
-    // Construct the final INSERT INTO query for order_history table
-    const insertQuery = `INSERT INTO aman.order_history (order_id, user_id, quantity, status) VALUES ${values}`;
-    // console.log('Insert Query:', insertQuery);
-
-    // Execute the INSERT INTO query
-    await pool.query(insertQuery);
+    // Commit transaction
+    await pool.query('COMMIT');
 
     res.json({ success: true });
   } catch (error) {
+    // Rollback transaction in case of error
+    await pool.query('ROLLBACK');
     console.error('Error:', error);
     res.status(500).json({ success: false, error: 'Error canceling orders' });
   }
 });
+
 
 
 // Endpoint to fetch order history for a specific user
