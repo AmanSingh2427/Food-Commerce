@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Dashboard from './Dashboard'
 
 const ProductsTable = () => {
   const [products, setProducts] = useState([]);
@@ -57,7 +58,9 @@ const ProductsTable = () => {
   };
 
   return (
-    <div className="container mx-auto mt-8">
+    <>
+    {/* <Dashboard/> */}
+    <div className="container mx-auto mt-8 ">
       <h2 className="text-2xl font-bold mb-4">Our Products</h2>
       <table className="min-w-full bg-white border border-gray-200">
         <thead>
@@ -109,6 +112,7 @@ const ProductsTable = () => {
         </tbody>
       </table>
     </div>
+    </>
   );
 };
 

@@ -1,5 +1,6 @@
 import React from 'react';
 import Navbar from './Navbar';
+import Footer from '../Footer';
 
 const About = () => {
   const username = localStorage.getItem('username'); 
@@ -22,6 +23,7 @@ const About = () => {
         </button>
       </div>
     </div>
+    <Footer/>
     </>
     
   )

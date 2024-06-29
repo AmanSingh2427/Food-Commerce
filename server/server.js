@@ -418,6 +418,55 @@ app.get('/products', async (req, res) => {
 });
 
 
+// Fetch all categories
+app.get('/categories', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT DISTINCT category FROM aman.products');
+    // console.log('Fetched categories:', result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching categories:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+
+// Fetch all categories
+app.get('/categories', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT DISTINCT category FROM aman.products');
+    // console.log('Fetched categories:', result.rows);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching categories:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+// Fetch products by category
+app.get('/products/category/:category', async (req, res) => {
+  const { category } = req.params;
+  // console.log(category);
+  try {
+    const result = await pool.query('SELECT * FROM aman.products WHERE category = $1', [category]);
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching products by category:', err);
+    res.status(500).json({ error: 'Internal Server Error' });
+  }
+});
+
+
+
+
+
+
+
+
 // Fetch a product by ID
 app.get('/products/:id', async (req, res) => {
   const productId = req.params.id;
@@ -797,8 +846,15 @@ app.get('/order-history/:userId', async (req, res) => {
   const userId = req.params.userId;
 
   try {
-    // Fetch order history for the user
-    const ordersResult = await pool.query('SELECT * FROM aman.order_history WHERE user_id = $1 ORDER BY created_at DESC', [userId]);
+    // Fetch order history for the user with product images
+    const ordersResult = await pool.query(
+      `SELECT oh.*, p.photo 
+       FROM aman.order_history oh
+       JOIN aman.products p ON oh.product_id = p.id
+       WHERE oh.user_id = $1
+       ORDER BY oh.created_at DESC`,
+      [userId]
+    );
     const orders = ordersResult.rows;
 
     res.json(orders);
@@ -807,6 +863,107 @@ app.get('/order-history/:userId', async (req, res) => {
     res.status(500).json({ success: false, error: 'Error fetching order history' });
   }
 });
+
+
+
+// Submit a rating for a product
+app.post('/submit-rating', async (req, res) => {
+  const { userId, orderId, rating } = req.body;
+  
+  try {
+    // Fetch product_id from the order
+    const orderResult = await pool.query('SELECT product_id FROM aman.order_history WHERE id = $1 AND user_id = $2', [orderId, userId]);
+    if (orderResult.rows.length === 0) {
+      return res.status(404).send('Order not found');
+    }
+
+    const { product_id } = orderResult.rows[0];
+
+    // Insert rating into aman.order_history table
+    await pool.query('UPDATE aman.order_history SET rating = $1 WHERE id = $2', [rating, orderId]);
+
+    // Fetch current rating and rating count from aman.products
+    const productResult = await pool.query('SELECT rating, rating_count FROM aman.products WHERE id = $1', [product_id]);
+    const { rating: currentRating, rating_count: ratingCount } = productResult.rows[0];
+
+    // Calculate new rating and increment count
+    const newRating = currentRating + rating;
+    const newRatingCount = ratingCount + 1;
+
+    // Update product rating and rating count in the aman.products table
+    await pool.query('UPDATE aman.products SET rating = $1, rating_count = $2 WHERE id = $3', [newRating, newRatingCount, product_id]);
+
+    res.send('Rating submitted successfully');
+  } catch (error) {
+    console.error('Error submitting rating:', error);
+    res.status(500).send('Server error');
+  }
+});
+
+
+// Fetch product rating endpoint
+app.get('/product-rating/:productId', async (req, res) => {
+  const productId = req.params.productId;
+
+  try {
+    // Fetch rating and rating count from aman.products
+    const queryText = `
+      SELECT 
+        rating, 
+        rating_count 
+      FROM 
+        aman.products 
+      WHERE 
+        id = $1`;
+    
+    const { rows } = await pool.query(queryText, [productId]);
+
+    if (rows.length === 0) {
+      return res.status(404).json({ error: 'Product not found' });
+    }
+
+    // Extract rating and rating count
+    const { rating, rating_count } = rows[0];
+
+    // Calculate average rating per your requirement
+    let averageRating = 0;
+    if (rating_count !== 0) {
+      averageRating = rating / rating_count;
+    }
+
+    res.json({ average_rating: averageRating, rating_count });
+  } catch (error) {
+    console.error('Error fetching product rating:', error);
+    res.status(500).json({ error: 'Server error' });
+  }
+});
+
+
+
+// // Fetch rating for a specific order ID
+// app.get('/fetch-rating/:userId', async (req, res) => {
+//   const userId = req.params.userId;
+
+//   try {
+//     // Fetch rating and rating count from aman.order_history based on user_id
+//     const result = await pool.query('SELECT rating FROM aman.order_history WHERE user_id = $1', [userId]);
+//     console.log(result);
+//     // return;
+    
+//     if (result.rows.length === 0) {
+//       return res.status(404).json({ error: 'Rating not found' });
+//     }
+
+//     const { rating, rating_count: ratingCount } = result.rows[0];
+//     res.json({ rating, rating_count: ratingCount });
+//   } catch (error) {
+//     console.error('Error fetching rating:', error);
+//     res.status(500).json({ error: 'Server error' });
+//   }
+// });
+
+
+
 
 
 

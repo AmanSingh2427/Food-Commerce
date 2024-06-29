@@ -1,6 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Dashboard from './Dashboard'
 
 const CreateProductForm = () => {
   const [newProduct, setNewProduct] = useState({
@@ -51,7 +52,9 @@ const CreateProductForm = () => {
   };
 
   return (
-    <div className="flex justify-center items-center min-h-screen bg-gray-100">
+   <>
+   <Dashboard/>
+   <div className="flex justify-center items-center min-h-screen bg-gray-100">
       <form onSubmit={handleSubmit} className="w-full max-w-lg bg-white p-8 rounded shadow-md">
         <h2 className="block text-gray-700 text-lg font-bold mb-6 text-center">Create New Product</h2>
         <div className="mb-4">
@@ -135,6 +138,7 @@ const CreateProductForm = () => {
         </button>
       </form>
     </div>
+   </>
   );
 };
 

@@ -1,6 +1,7 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
+import Dashboard from './Dashboard';
 
 const UpdateProduct = () => {
   const { productId } = useParams();
@@ -77,43 +78,86 @@ const UpdateProduct = () => {
   };
 
   return (
-    <div className="container mx-auto mt-8">
-      <h2 className="text-2xl font-bold mb-4">Update Product</h2>
-      <form onSubmit={handleSubmit}>
-        <div className="mb-4">
-          <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name:</label>
-          <input type="text" id="name" name="name" value={product.name} onChange={handleChange} className="border border-gray-300 rounded-md p-2 w-full" />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price:</label>
-          <input type="text" id="price" name="price" value={product.price} onChange={handleChange} className="border border-gray-300 rounded-md p-2 w-full" />
-        </div>
-        <div className="mb-4">
-          <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description:</label>
-          <textarea id="description" name="description" value={product.description} onChange={handleChange} className="border border-gray-300 rounded-md p-2 w-full"></textarea>
-        </div>
-        <div className="mb-4">
-          <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category:</label>
-          <select id="category" name="category" value={product.category} onChange={handleChange} className="border border-gray-300 rounded-md p-2 w-full">
-            <option value="">Select a category</option>
-            <option value="Appetizers">Appetizers</option>
-            <option value="Main Courses">Main Courses</option>
-            <option value="Entrees">Entrees</option>
-            <option value="Desserts">Desserts</option>
-            <option value="Beverages">Beverages</option>
-            <option value="Specialty Items">Specialty Items</option>
-            <option value="Kids' Menu">Kids' Menu</option>
-            <option value="Seasonal Specials">Seasonal Specials</option>
-            <option value="Healthy Options">Healthy Options</option>
-          </select>
-        </div>
-        <div className="mb-4">
-          <label htmlFor="photo" className="block text-sm font-medium text-gray-700">Photo:</label>
-          <input type="file" id="photo" name="photo" onChange={handleImageChange} className="border border-gray-300 rounded-md p-2 w-full" />
-        </div>
-        <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded mr-2">Update</button>
-      </form>
-    </div>
+    <>
+      <Dashboard />
+      <div className="container mx-auto mt-8 p-4">
+        <h2 className="text-2xl font-bold mb-6 text-center">Update Product</h2>
+        <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white p-8 rounded shadow-md">
+          <div className="mb-4">
+            <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name:</label>
+            <input
+              type="text"
+              id="name"
+              name="name"
+              value={product.name}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-md p-2 w-full"
+              placeholder="Enter product name"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price:</label>
+            <input
+              type="text"
+              id="price"
+              name="price"
+              value={product.price}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-md p-2 w-full"
+              placeholder="Enter product price"
+            />
+          </div>
+          <div className="mb-4">
+            <label htmlFor="description" className="block text-sm font-medium text-gray-700">Description:</label>
+            <textarea
+              id="description"
+              name="description"
+              value={product.description}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-md p-2 w-full"
+              placeholder="Enter product description"
+            ></textarea>
+          </div>
+          <div className="mb-4">
+            <label htmlFor="category" className="block text-sm font-medium text-gray-700">Category:</label>
+            <select
+              id="category"
+              name="category"
+              value={product.category}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-md p-2 w-full"
+            >
+              <option value="">Select a category</option>
+              <option value="Appetizers">Appetizers</option>
+              <option value="Main Courses">Main Courses</option>
+              <option value="Entrees">Entrees</option>
+              <option value="Desserts">Desserts</option>
+              <option value="Beverages">Beverages</option>
+              <option value="Specialty Items">Specialty Items</option>
+              <option value="Kids' Menu">Kids' Menu</option>
+              <option value="Seasonal Specials">Seasonal Specials</option>
+              <option value="Healthy Options">Healthy Options</option>
+            </select>
+          </div>
+          <div className="mb-4">
+            <label htmlFor="photo" className="block text-sm font-medium text-gray-700">Photo:</label>
+            <input
+              type="file"
+              id="photo"
+              name="photo"
+              onChange={handleImageChange}
+              className="border border-gray-300 rounded-md p-2 w-full"
+            />
+          </div>
+          <button
+            type="submit"
+            className="bg-blue-500 text-white px-4 py-2 rounded hover:bg-blue-600 transition-colors w-full"
+          >
+            Update
+          </button>
+        </form>
+      </div>
+    </>
   );
 };
 

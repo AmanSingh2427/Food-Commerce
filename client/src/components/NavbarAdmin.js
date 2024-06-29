@@ -2,13 +2,16 @@ import React, { useState, useEffect } from 'react';
 import { Link, useNavigate } from 'react-router-dom';
 import { FaBell } from 'react-icons/fa';
 import axios from 'axios';
-// import { useNavigate } from 'react-router-dom';
+import reactLogo from '../images/image2.png'; // Update this path with the actual path to your logo
 
-const Navbar = ({ toggleTableDisplay }) => {
+const Navbar = ({ toggleTableDisplay, setFilteredProducts }) => {
   const username = localStorage.getItem('username');
   const userImage = localStorage.getItem('userImage');
   const [pendingUsers, setPendingUsers] = useState([]);
   const [showDropdown, setShowDropdown] = useState(false);
+  const [categories, setCategories] = useState([]);
+  const [showCategories, setShowCategories] = useState(false);
+  const [searchInput, setSearchInput] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -27,6 +30,22 @@ const Navbar = ({ toggleTableDisplay }) => {
     fetchPendingUsers();
   }, []);
 
+  useEffect(() => {
+    const fetchCategories = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/categories', {
+          headers: {
+            Authorization: `Bearer ${localStorage.getItem('token')}`
+          }
+        });
+        setCategories(response.data);
+      } catch (err) {
+        console.error('Error fetching categories:', err);
+      }
+    };
+    fetchCategories();
+  }, []);
+
   const handleLogout = () => {
     localStorage.removeItem('token');
     localStorage.removeItem('username');
@@ -38,22 +57,52 @@ const Navbar = ({ toggleTableDisplay }) => {
     navigate('/order-request');
   };
 
+  const handleCategoryClick = async (category) => {
+    try {
+      const response = await axios.get(`http://localhost:5000/products/category/${category}`, {
+        headers: {
+          Authorization: `Bearer ${localStorage.getItem('token')}`
+        }
+      });
+      setFilteredProducts(response.data);
+    } catch (err) {
+      console.error('Error fetching category products:', err);
+    }
+    setShowCategories(false); // Close the dropdown after selecting a category
+  };
+
+  const handleSearchInputChange = (event) => {
+    setSearchInput(event.target.value);
+    if (event.target.value) {
+      setShowCategories(true);
+    } else {
+      setShowCategories(false);
+    }
+  };
+
+  const handleLogoClick = () => {
+    navigate('/adminhome');
+  };
+
   return (
-    <nav className="bg-gray-800 p-4">
+    <nav className="bg-gray-800 p-4 ml-64">
       <div className="flex justify-between items-center">
         <div className="flex space-x-4">
-          <Link to="/home" className="text-white">Home</Link>
-          <Link to="/about" className="text-white">About</Link>
-          <Link to="/contact" className="text-white">Contact</Link>
-          <Link to="/products" className="text-white">Our Products</Link>
+          <div className="p-1">
+            <img
+              src={reactLogo}
+              className="h-12 w-auto cursor-pointer"
+              alt="React logo"
+              onClick={handleLogoClick}
+            />
+          </div>
         </div>
         <div className="flex space-x-4 items-center">
           {username ? (
             <>
-              <Link to="/update-profile" className="text-blue-400 hover:text-blue-700 transition-colors">Update Profile</Link>
-              <img 
-                src={userImage ? `http://localhost:5000/${userImage}` : "default-image-url"} 
-                alt="User profile" 
+              <img
+                src={userImage ? `http://localhost:5000/${userImage}` : "default-image-url"}
+                alt="User profile"
                 className="w-8 h-8 rounded-full"
               />
               <span className="text-white">{username}</span>
@@ -89,14 +138,8 @@ const Navbar = ({ toggleTableDisplay }) => {
                 )}
               </div>
               <button
-                onClick={handleOrderRequestsClick}
-                className="text-green-400 hover:text-green-700 transition-colors"
-              >
-                Order Requests
-              </button>
-              <button
                 onClick={handleLogout}
-                className="text-red-400 hover:text-red-700 transition-colors"
+                className="text-red-400 hover:text-red-700 transition-colors w-auto"
               >
                 Logout
               </button>
