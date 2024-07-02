@@ -4,6 +4,9 @@ import Footer from '../Footer';
 import step1Image from '../images/image1.jpg'; // Replace with your image path
 import step2Image from '../images/card4.webp'; // Replace with your image path
 import step3Image from '../images/card5.jpeg'; // Replace with your image path
+import step4Image from '../images/card6.webp'; // Replace with your image path
+import step5Image from '../images/card7.jpeg'; // Replace with your image path
+import step6Image from '../images/card8.jpeg'; // Replace with your image path
 
 const About = () => {
   return (
@@ -44,6 +47,38 @@ const About = () => {
               </p>
             </div>
           </div>
+
+
+          <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-4">
+            <img className="w-full h-48 object-cover" src={step4Image} alt="Step 1" />
+            <div className="px-6 py-4">
+              <div className="font-bold text-xl mb-2">Step 4</div>
+              <p className="text-gray-700 text-base">
+              Optimize your menu. Ensure your menu is up-to-date and appealing to attract more customers.
+              </p>
+            </div>
+          </div>
+
+          <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-4">
+            <img className="w-full h-48 object-cover" src={step5Image} alt="Step 1" />
+            <div className="px-6 py-4">
+              <div className="font-bold text-xl mb-2">Step 5</div>
+              <p className="text-gray-700 text-base">
+              Promote your business. Use Zomato\'s marketing tools to reach a larger audience and increase your sales.
+              </p>
+            </div>
+          </div>
+
+          <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-4">
+            <img className="w-full h-48 object-cover" src={step6Image} alt="Step 1" />
+            <div className="px-6 py-4">
+              <div className="font-bold text-xl mb-2">Step 6</div>
+              <p className="text-gray-700 text-base">
+              Track your performance. Use analytics to monitor your sales and improve your service.
+              </p>
+            </div>
+          </div>
+
         </div>
       </div>
       <Footer />

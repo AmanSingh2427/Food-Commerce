@@ -647,6 +647,7 @@ const uniqueOrderId = generateRandomOrderId();
 console.log(uniqueOrderId); // Output: Example random order ID
 
 
+
 // Endpoint to place an order and update order history
 app.post('/place-order/:userId', async (req, res) => {
   const userId = req.params.userId;
@@ -656,8 +657,13 @@ app.post('/place-order/:userId', async (req, res) => {
     // Begin transaction
     await pool.query('BEGIN');
 
-    // Get all cart items for the user
-    const cartItemsResult = await pool.query('SELECT id, product_id, quantity FROM aman.cart WHERE user_id = $1', [userId]);
+    // Get all cart items for the user with product details
+    const cartItemsResult = await pool.query(`
+      SELECT cart.id, cart.product_id, cart.quantity, products.name as product_name, products.price
+      FROM aman.cart cart
+      JOIN aman.products products ON cart.product_id = products.id
+      WHERE cart.user_id = $1
+    `, [userId]);
     const cartItems = cartItemsResult.rows;
 
     // Insert cart items into order_history with the same unique order ID
@@ -674,6 +680,58 @@ app.post('/place-order/:userId', async (req, res) => {
     // Commit transaction
     await pool.query('COMMIT');
 
+    // Get user email and full name
+    const userResult = await pool.query('SELECT email, full_name FROM aman.users WHERE id = $1', [userId]);
+    const user = userResult.rows[0];
+
+    // Create HTML table for order details
+    const orderDetailsTable =` 
+      <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse;">
+        <thead>
+          <tr>
+            <th>Product Name</th>
+            <th>Quantity</th>
+            <th>Price</th>
+          </tr>
+        </thead>
+        <tbody>
+          ${cartItems.map(item => `
+            <tr>
+              <td>${item.product_name}</td>
+              <td>${item.quantity}</td>
+              <td>${item.price}</td>
+            </tr>
+          `).join('')}
+        </tbody>
+      </table>`
+    ;
+
+    // Send email to the user
+    sendEmail(
+      user.email,
+      'Order Placed Successfully',
+      `
+      <p>Hello ${user.full_name},</p>
+      <p>Your order with Order ID: ${uniqueOrderId} has been placed successfully. Here are the details:</p>
+      ${orderDetailsTable}
+      `
+    );
+
+    // Send email to the admin
+    const adminEmail = 'thakuraman8630@gmail.com'; // Replace with the admin's email address
+    sendEmail(
+      adminEmail,
+      'New Order Placed',
+      `
+      <p>Hello Admin,</p>
+      <p>A new order has been placed with the following details:</p>
+      <p><strong>Order ID:</strong> ${uniqueOrderId}</p>
+      <p><strong>User ID:</strong> ${userId}</p>
+      <p><strong>User Name:</strong> ${user.full_name}</p>
+      ${orderDetailsTable}
+      `
+    );
+
     res.status(200).json({ message: 'Order placed successfully', orderId: uniqueOrderId });
   } catch (err) {
     // Rollback transaction in case of error
@@ -682,6 +740,143 @@ app.post('/place-order/:userId', async (req, res) => {
     res.status(500).json({ error: 'Internal server error' });
   }
 });
+
+
+
+
+
+// Endpoint to place an order and update order history
+// app.post('/place-order/:userId', async (req, res) => {
+//   const userId = req.params.userId;
+//   const uniqueOrderId = generateRandomOrderId(); // Generate a random order ID for the entire order
+
+//   try {
+//     // Begin transaction
+//     await pool.query('BEGIN');
+
+//     // Get all cart items for the user with product details
+//     const cartItemsResult = await pool.query(`
+//       SELECT cart.id, cart.product_id, cart.quantity, products.name as product_name, products.price
+//       FROM aman.cart cart
+//       JOIN aman.products products ON cart.product_id = products.id
+//       WHERE cart.user_id = $1
+//     `, [userId]);
+//     const cartItems = cartItemsResult.rows;
+
+//     // Insert cart items into order_history with the same unique order ID
+//     for (let item of cartItems) {
+//       await pool.query(
+//         'INSERT INTO aman.order_history (order_id, user_id, quantity, status, created_at, product_id) VALUES ($1, $2, $3, $4, $5, $6)',
+//         [uniqueOrderId, userId, item.quantity, 'pending', new Date(), item.product_id]
+//       );
+//     }
+
+//     // Update delivered column to false for the user's cart items
+//     await pool.query('UPDATE aman.cart SET delivered = false WHERE user_id = $1', [userId]);
+
+//     // Commit transaction
+//     await pool.query('COMMIT');
+
+//     // Get user email and full name
+//     const userResult = await pool.query('SELECT email, full_name FROM aman.users WHERE id = $1', [userId]);
+//     const user = userResult.rows[0];
+
+//     // Create table for email
+//     const orderDetailsTable = `
+//       <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse;">
+//         <thead>
+//           <tr>
+//             <th>Product Name</th>
+//             <th>Quantity</th>
+//             <th>Price</th>
+//           </tr>
+//         </thead>
+//         <tbody>
+//           ${cartItems.map(item => `
+//             <tr>
+//               <td>${item.product_name}</td>
+//               <td>${item.quantity}</td>
+//               <td>${item.price}</td>
+//             </tr>
+//           `).join('')}
+//         </tbody>
+//       </table>
+//     `;
+
+//     // Send email to the user
+//     sendEmail(
+//       user.email,
+//       'Order Placed Successfully',
+//       `
+//       <p>Hello ${user.full_name},</p>
+//       <p>Your order with Order ID: ${uniqueOrderId} has been placed successfully. Here are the details:</p>
+//       ${orderDetailsTable}
+//       `
+//     );
+
+//     // Send email to the admin
+//     const adminEmail = 'thakuraman8630@gmail.com'; // Replace with the admin's email address
+//     sendEmail(
+//       adminEmail,
+//       'New Order Placed',
+//       `
+//       <p>Hello Admin,</p>
+//       <p>A new order has been placed with the following details:</p>
+//       <p><strong>Order ID:</strong> ${uniqueOrderId}</p>
+//       <p><strong>User ID:</strong> ${userId}</p>
+//       <p><strong>User Name:</strong> ${user.full_name}</p>
+//       ${orderDetailsTable}
+//       `
+//     );
+
+//     res.status(200).json({ message: 'Order placed successfully', orderId: uniqueOrderId });
+//   } catch (err) {
+//     // Rollback transaction in case of error
+//     await pool.query('ROLLBACK');
+//     console.error('Error placing order:', err);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
+
+
+
+
+
+// Endpoint to place an order and update order history
+// app.post('/place-order/:userId', async (req, res) => {
+//   const userId = req.params.userId;
+//   const uniqueOrderId = generateRandomOrderId(); // Generate a random order ID for the entire order
+
+//   try {
+//     // Begin transaction
+//     await pool.query('BEGIN');
+
+//     // Get all cart items for the user
+//     const cartItemsResult = await pool.query('SELECT id, product_id, quantity FROM aman.cart WHERE user_id = $1', [userId]);
+//     const cartItems = cartItemsResult.rows;
+
+//     // Insert cart items into order_history with the same unique order ID
+//     for (let item of cartItems) {
+//       await pool.query(
+//         'INSERT INTO aman.order_history (order_id, user_id, quantity, status, created_at, product_id) VALUES ($1, $2, $3, $4, $5, $6)',
+//         [uniqueOrderId, userId, item.quantity, 'pending', new Date(), item.product_id]
+//       );
+//     }
+
+//     // Update delivered column to false for the user's cart items
+//     await pool.query('UPDATE aman.cart SET delivered = false WHERE user_id = $1', [userId]);
+
+//     // Commit transaction
+//     await pool.query('COMMIT');
+
+//     res.status(200).json({ message: 'Order placed successfully', orderId: uniqueOrderId });
+//   } catch (err) {
+//     // Rollback transaction in case of error
+//     await pool.query('ROLLBACK');
+//     console.error('Error placing order:', err);
+//     res.status(500).json({ error: 'Internal server error' });
+//   }
+// });
 
 
 
@@ -963,6 +1158,19 @@ app.get('/product-rating/:productId', async (req, res) => {
 // });
 
 
+// Endpoint to handle form submissions
+app.post('/api/contact', async (req, res) => {
+  const { name, email, food, message } = req.body;
+  try {
+    const query = 'INSERT INTO aman.contacts (name, email, food, message) VALUES ($1, $2, $3, $4)';
+    const values = [name, email, food, message];
+    await pool.query(query, values);
+    res.status(200).json({ message: 'Contact information saved successfully!' });
+  } catch (error) {
+    console.error('Error saving contact information:', error);
+    res.status(500).json({ message: 'Failed to save contact information' });
+  }
+});
 
 
 

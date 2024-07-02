@@ -4,6 +4,7 @@ import Dashboard from './components/Dashboard'
 import Products from './components/Products';
 import Body from './components/Body'
 import Footer from './Footer'
+import HomeBody from './components/HomeBody';
 
 const Home = () => {
   const username = localStorage.getItem('username'); // Fetch the username from localStorage
@@ -15,7 +16,7 @@ const Home = () => {
     {/* <Navbar setFilteredProducts={setFilteredProducts} cartCount={cartCount} setCartCount={setCartCount} /> */}
    {/* <Body/> */}
     <Products/>
-    
+    <HomeBody/>
     </div>
     <Footer/>
     {/* <div className="flex justify-center items-center h-screen bg-gray-100 ml-80">
