@@ -1,0 +1,50 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Order History of User</title>
+  <!-- Include Tailwind CSS -->
+  <link href="https://cdn.jsdelivr.net/npm/tailwindcss@2.2.19/dist/tailwind.min.css" rel="stylesheet">
+  <style>
+    body {
+      font-family: Arial, sans-serif;
+    }
+    .table {
+      width: 100%;
+      border-collapse: collapse;
+      margin-bottom: 20px;
+    }
+    .table, th, td {
+      border: 1px solid #e2e8f0;
+      padding: 8px;
+      text-align: left;
+    }
+    .table th {
+      background-color: #f7fafc;
+    }
+    .text-center {
+      text-align: center;
+    }
+  </style>
+</head>
+<body class="p-4">
+  <h1 class="text-3xl font-bold text-center mb-8">Order History</h1>
+  <table class="table">
+    <thead>
+      <tr>
+        <th class="py-2 px-4">Order ID</th>
+        <th class="py-2 px-4">User ID</th>
+        <th class="py-2 px-4">Product ID</th>
+        <th class="py-2 px-4">Quantity</th>
+        <th class="py-2 px-4">Status</th>
+        <th class="py-2 px-4">Created At</th>
+        <th class="py-2 px-4">Rating</th>
+      </tr>
+    </thead>
+    <tbody id="order-history-body">
+      <!-- Data will be dynamically inserted here -->
+    </tbody>
+  </table>
+</body>
+</html>

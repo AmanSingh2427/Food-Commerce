@@ -20,6 +20,7 @@ import CreateProductForm from './components/CreateProductForm';
 import Layout from './Layout';
 import UserRequests from './components/UserRequests';
 import UpdateUserProfile from './components/UpdateUserProfile'
+import DownloadPdf from './components/DownloadPdf';
 
 const App = () => {
   const token = localStorage.getItem('token');
@@ -51,7 +52,7 @@ const App = () => {
           <Route path="/order-request" element={<PrivateRoute><Layout><OrderRequest /></Layout></PrivateRoute>} />
           <Route path="/purchase-history" element={<PrivateRoute><><PurchaseHistory /></></PrivateRoute>} />
           <Route path="/update/:productId" element={<PrivateRoute><Layout><UpdateProduct /></Layout></PrivateRoute>} />
-
+          <Route path="/download-pdf" element={<PrivateRoute><Layout><DownloadPdf /></Layout></PrivateRoute>} />
           <Route path="/notauthorized" element={<NotAuthorized />} />
         </Routes>
       </div>

@@ -84,9 +84,9 @@ const Dashboard = () => {
           </Link>
         </li>
         <li className="py-2 px-4 hover:bg-gray-300">
-          <Link to="/stock" className="block flex items-center">
+          <Link to="/download-pdf" className="block flex items-center">
             <FaArrowUp className="mr-2" />
-            Stock
+            Download Pdf
           </Link>
         </li>
         <li className="py-2 px-4 hover:bg-gray-300">

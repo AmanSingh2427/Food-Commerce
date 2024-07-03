@@ -43,6 +43,7 @@ const ProductProcessing = () => {
                     <table className="min-w-full">
                         <thead>
                             <tr className="text-center border-t">
+                                <th className="py-2 px-4">Order ID</th>
                                 <th className="py-2 px-4">Product</th>
                                 <th className="py-2 px-4">Name</th>
                                 <th className="py-2 px-4">Price</th>
@@ -51,7 +52,8 @@ const ProductProcessing = () => {
                         </thead>
                         <tbody>
                             {pendingOrders.map((item) => (
-                                <tr key={item.id} className="text-center border-t">
+                                <tr key={item.order_id} className="text-center border-t">
+                                    <td className="py-2 px-4">{item.order_id}</td>
                                     <td className="py-2 px-4">
                                         <img
                                             src={`http://localhost:5000/uploads/${item.photo}`}
