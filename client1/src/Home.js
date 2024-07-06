@@ -12,13 +12,15 @@ const Home = () => {
   return (
     <>
     {/* <Dashboard/> */}
-    <div className=''>
+    <div className="flex flex-col min-h-screen">
+    <div className='flex-grow'>
     {/* <Navbar setFilteredProducts={setFilteredProducts} cartCount={cartCount} setCartCount={setCartCount} /> */}
    {/* <Body/> */}
     <Products/>
     <HomeBody/>
     </div>
     <Footer/>
+    </div>
     {/* <div className="flex justify-center items-center h-screen bg-gray-100 ml-80">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md text-center">
         <h2 className="text-2xl font-bold mb-6">User Home Page</h2>

@@ -71,12 +71,7 @@ const Dashboard = () => {
             Update Profile
           </Link>
         </li>
-        <li className="py-2 px-4 hover:bg-gray-300">
-          <div className="block flex items-center cursor-pointer" onClick={handleLogout}>
-            <FaUserCircle className="mr-2" />
-            Logout
-          </div>
-        </li>
+       
         <li className="py-2 px-4 hover:bg-gray-300">
           <Link to="/user-requests" className="block flex items-center">
             <FaUpload className="mr-2" />
@@ -90,10 +85,16 @@ const Dashboard = () => {
           </Link>
         </li>
         <li className="py-2 px-4 hover:bg-gray-300">
-          <Link to="/quality" className="block flex items-center">
+          <Link to="/user-message" className="block flex items-center">
             <FaStar className="mr-2" />
-            Quality
+            User's Messages
           </Link>
+        </li>
+        <li className="py-2 px-4 hover:bg-gray-300">
+          <div className="block flex items-center cursor-pointer" onClick={handleLogout}>
+            <FaUserCircle className="mr-2" />
+            Logout
+          </div>
         </li>
       </ul>
     </div>

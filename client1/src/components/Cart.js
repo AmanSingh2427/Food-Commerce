@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Navbar from './Navbar';
+import Footer from '../Footer';
 
 const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
@@ -91,13 +93,25 @@ const Cart = () => {
         navigate('/purchase-history');
     };
 
+    const redirectToProductProcessing = () => {
+        navigate('/product-processing');
+    };
+
     return (
-        <div className="container mx-auto mt-8">
+        <>
+        <Navbar/>
+        <div className="flex flex-col min-h-screen">
+        <div className="container mx-auto mt-8 flex-grow">
             <div className="flex justify-between mb-4">
                 <h2 className="text-2xl font-bold">Your Cart</h2>
-                <button onClick={redirectToPurchaseHistory} className="bg-green-500 text-white px-4 py-2 rounded">
-                    Purchase History
-                </button>
+                <div>
+                    <button onClick={redirectToProductProcessing} className="bg-yellow-500 text-white px-4 py-2 rounded mr-2">
+                        Track Product
+                    </button>
+                    <button onClick={redirectToPurchaseHistory} className="bg-green-500 text-white px-4 py-2 rounded">
+                        Purchase History
+                    </button>
+                </div>
             </div>
             {cartItems.length > 0 ? (
                 <div className="bg-white shadow-md rounded-lg overflow-hidden">
@@ -192,6 +206,9 @@ const Cart = () => {
                 </div>
             )}
         </div>
+        <Footer/>
+        </div>
+        </>
     );
 };
 

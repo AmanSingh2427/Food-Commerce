@@ -13,7 +13,7 @@ const UpdateProduct = () => {
     name: '',
     price: '',
     description: '',
-    category: '', // Add category field here
+    category: '',
     photo: ''
   });
   const [image, setImage] = useState(null);
@@ -46,6 +46,7 @@ const UpdateProduct = () => {
 
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
+    console.log("Selected image:", e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
@@ -59,9 +60,15 @@ const UpdateProduct = () => {
     formData.append('name', product.name);
     formData.append('price', product.price);
     formData.append('description', product.description);
-    formData.append('category', product.category); // Add category to formData
+    formData.append('category', product.category);
     if (image) {
       formData.append('photo', image);
+      console.log("Appended image:", image);
+    }
+
+    console.log("FormData contents:");
+    for (let [key, value] of formData.entries()) {
+      console.log(key, value);
     }
 
     try {
@@ -72,7 +79,7 @@ const UpdateProduct = () => {
         }
       });
       console.log('Product updated successfully!');
-      navigate('/products'); // Redirect to the products table after successful update
+      navigate('/products');
     } catch (err) {
       console.error('Error updating product:', err);
     }
@@ -81,7 +88,7 @@ const UpdateProduct = () => {
   return (
     <>
       <Dashboard />
-      <NavbarAdmin/>
+      <NavbarAdmin />
       <div className="container mx-auto mt-8 p-4">
         <h2 className="text-2xl font-bold mb-6 text-center">Update Product</h2>
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white p-8 rounded shadow-md">
@@ -100,7 +107,7 @@ const UpdateProduct = () => {
           <div className="mb-4">
             <label htmlFor="price" className="block text-sm font-medium text-gray-700">Price:</label>
             <input
-              type="text"
+              type="number"
               id="price"
               name="price"
               value={product.price}

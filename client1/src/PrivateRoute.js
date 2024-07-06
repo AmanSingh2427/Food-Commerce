@@ -9,12 +9,11 @@ const PrivateRoute = ({ children, requiredRole }) => {
     return <Navigate to="/login" />;
   }
 
-  // Allow access if no specific role is required or if the user's role matches the required role
-  if (!requiredRole || userRole === requiredRole || (requiredRole === 'user' && userRole === 'admin')) {
-    return children;
+  if (requiredRole && userRole !== requiredRole) {
+    return <Navigate to="/notauthorized" />;
   }
 
-  return <Navigate to="/notauthorized" />;
+  return children;
 };
 
 export default PrivateRoute;

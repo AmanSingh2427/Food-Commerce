@@ -1,50 +1,98 @@
-import React from 'react';
-import { Link,useNavigate } from 'react-router-dom';
+// AdminHome.js (or equivalent)
+
+import React, { useState, useEffect, useRef } from 'react';
+import axios from 'axios';
+import Chart from 'chart.js/auto';
 import NavbarAdmin from './components/NavbarAdmin';
-import bgImage from './images/image1.jpg'; // Update this path with the actual path to your background image
 
 const AdminHome = () => {
-  const navigate = useNavigate();
+  const [orderData, setOrderData] = useState([]);
+  const [chartInstance, setChartInstance] = useState(null);
+  const chartContainer = useRef(null); // Reference to the chart container element
+
+  useEffect(() => {
+    const fetchOrderData = async () => {
+      try {
+        const response = await axios.get('http://localhost:5000/api/order-history'); // Replace with your backend endpoint
+        setOrderData(response.data);
+      } catch (error) {
+        console.error('Error fetching order history:', error);
+      }
+    };
+
+    fetchOrderData();
+  }, []);
+
+  useEffect(() => {
+    const chartOrders = (data) => {
+      // Check if chart container and data are available
+      if (chartContainer.current && data.length > 0) {
+        // Destroy existing chart instance if it exists
+        if (chartInstance) {
+          chartInstance.destroy();
+        }
+
+        const months = data.map(entry => entry.month);
+        const orders = data.map(entry => entry.total_orders);
+
+        const ctx = chartContainer.current.getContext('2d');
+        const newChartInstance = new Chart(ctx, {
+          type: 'bar',
+          data: {
+            labels: months,
+            datasets: [{
+              label: 'Orders per Month',
+              data: orders,
+              backgroundColor: 'rgba(54, 162, 235, 0.6)',
+              borderColor: 'rgba(54, 162, 235, 1)',
+              borderWidth: 1
+            }]
+          },
+          options: {
+            responsive: true,
+            plugins: {
+              legend: {
+                display: false
+              }
+            },
+            scales: {
+              x: {
+                grid: {
+                  display: false
+                }
+              },
+              y: {
+                beginAtZero: true,
+                grid: {
+                  display: true
+                }
+              }
+            }
+          }
+        });
+
+        // Set the new chart instance to state
+        setChartInstance(newChartInstance);
+      }
+    };
+
+    chartOrders(orderData);
+
+    // Cleanup: Destroy chart instance when component unmounts
+    return () => {
+      if (chartInstance) {
+        chartInstance.destroy();
+      }
+    };
+  }, [orderData]);
 
   return (
     <>
       <NavbarAdmin />
-      <div className="flex flex-col flex-grow ">
-        <div className="relative flex flex-col justify-center items-center min-h-screen bg-gray-100 p-4 ">
-          <div
-            className="absolute inset-0 bg-cover bg-center z-0 w-full h-full"
-            style={{ backgroundImage: `url(${bgImage})` }}
-          />
-          <div className="relative bg-white p-8 rounded shadow-md max-w-4xl mx-auto bg-opacity-70 backdrop-blur-md z-10">
-            <h2 className="text-2xl font-bold mb-6 text-center">Admin Home Page</h2>
-            <div className="mb-6 text-center">Welcome, {localStorage.getItem('username')}!</div>
-
-            <div className="flex justify-center space-x-4 mb-6">
-              <button
-                onClick={() => navigate('/create-product')}
-                className="bg-blue-500 text-white py-2 px-4 rounded hover:bg-blue-600 transition-colors"
-              >
-                Create New Product
-              </button>
-              <Link
-                to="/products"
-                className="bg-yellow-500 text-white py-2 px-4 rounded hover:bg-yellow-600 transition-colors"
-              >
-                Update Product
-              </Link>
-            </div>
-
-            <button
-              onClick={() => {
-                localStorage.removeItem('token');
-                localStorage.removeItem('username');
-                navigate('/login');
-              }}
-              className="w-full bg-red-500 text-white py-2 rounded hover:bg-red-600 transition-colors mt-6"
-            >
-              Logout
-            </button>
-          </div>
+      <div className="container mx-auto px-4 mt-8">
+        <h4 className="text-3xl font-bold mb-4">Orders Per Month</h4>
+        <div className="bg-white rounded-lg shadow-md p-6">
+          <canvas ref={chartContainer} id="orderChart" width="400" height="170"></canvas>
         </div>
       </div>
     </>

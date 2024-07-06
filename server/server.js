@@ -88,12 +88,13 @@ app.get('/adminhome', checkAdminRole, (req, res) => {
 
 
 // Other routes (signup, login, etc.) go here
-app.post('/signup', (req, res) => {
+app.post('/signup', async (req, res) => {
   upload(req, res, async (err) => {
     if (err) {
       return res.status(400).send({ message: err });
     }
-    const { username, password, email, fullName, role } = req.body; // Added role
+
+    const { username, password, email, fullName, role } = req.body;
     const imagePath = req.file ? req.file.path : null;
 
     try {
@@ -104,27 +105,42 @@ app.post('/signup', (req, res) => {
 
       const hashedPassword = await bcrypt.hash(password, 10);
       const newUser = await pool.query(
-        'INSERT INTO aman.users (username, password, email, full_name, image, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *', // Added role
-        [username, hashedPassword, email, fullName, imagePath, role] // Added role
+        'INSERT INTO aman.users (username, password, email, full_name, image, role) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+        [username, hashedPassword, email, fullName, imagePath, role]
       );
 
-      // Send email to the new user
-      sendEmail(
+      // Send HTML email to the new user
+      const userHtmlTable = `
+        <table border="1" cellpadding="10" cellspacing="0" style="border-collapse: collapse;">
+          <thead>
+            <tr><th colspan="2">Registration Details</th></tr>
+          </thead>
+          <tbody>
+            <tr><td>Username:</td><td>${username}</td></tr>
+            <tr><td>Email:</td><td>${email}</td></tr>
+            <tr><td>Full Name:</td><td>${fullName}</td></tr>
+            <tr><td>Role:</td><td>${role}</td></tr>
+          </tbody>
+        </table>
+      `;
+
+      await sendEmail(
         email,
-        'Registration is under processing wait for some time to allow the admin to give access to login',
-        `Hello ${fullName},\n\nYou have successfully registered with the username: ${username}, image address ${imagePath}, and your role is ${role}.`
+        'Registration Details',
+        `Hello ${fullName},<br><br>You have successfully registered with the following details:<br>${userHtmlTable} <br> Please wait for login till the admin approves you.`
       );
 
       // Send email to the admin for approval
       const adminEmail = 'thakuraman8630@gmail.com'; // Replace with the admin's email address
-      sendEmail(
+      await sendEmail(
         adminEmail,
         'New User Registration Approval Needed',
-        `Hello Admin,\n\nA new user has registered with the following details:\n\nUsername: ${username}\nFull Name: ${fullName}\nEmail: ${email}\nRole: ${role}\n\nPlease approve or reject this user.`
+        `Hello Admin,<br><br>A new user has registered with the following details:<br>${userHtmlTable}<br>Please approve or reject this user.`
       );
 
       console.log('Registration email sent to:', email);
       console.log('Approval email sent to admin:', adminEmail);
+
       res.json(newUser.rows[0]);
     } catch (err) {
       console.error(err.message);
@@ -144,7 +160,7 @@ app.get('/pending-registrations', checkAdminRole, async (req, res) => {
   }
 });
 
-// Approve user registration
+// Approve user registration by Admin
 app.post('/approve-user', checkAdminRole, async (req, res) => {
   const { userId } = req.body;
   try {
@@ -155,11 +171,11 @@ app.post('/approve-user', checkAdminRole, async (req, res) => {
 
     await pool.query('UPDATE aman.users SET approved = true WHERE id = $1', [userId]);
 
-    // Send email to the user about approval
-    sendEmail(
+    // Send HTML email to the user about approval
+     sendEmail(
       user.rows[0].email,
       'Registration Approved',
-      `Hello ${user.rows[0].full_name},\n\nYour registration has been approved by the admin. You can now log in to your account.`
+      `Hello ${user.rows[0].full_name},<br><br>Your registration has been approved by the admin. You can now log in to your account.`
     );
 
     res.json({ message: 'User approved' });
@@ -169,7 +185,8 @@ app.post('/approve-user', checkAdminRole, async (req, res) => {
   }
 });
 
-// Reject user registration
+
+// Admin reject the user request
 app.post('/reject-user', checkAdminRole, async (req, res) => {
   const { userId } = req.body;
   try {
@@ -180,11 +197,11 @@ app.post('/reject-user', checkAdminRole, async (req, res) => {
 
     await pool.query('DELETE FROM aman.users WHERE id = $1', [userId]);
 
-    // Send email to the user about rejection
-    sendEmail(
+    // Send HTML email to the user about rejection
+     sendEmail(
       user.rows[0].email,
       'Registration Rejected',
-      `Hello ${user.rows[0].full_name},\n\nYour registration has been rejected by the admin. For further details, please contact support.`
+      `Hello ${user.rows[0].full_name},<br><br>Your registration has been rejected by the admin. For further details, please contact support.`
     );
 
     res.json({ message: 'User rejected and deleted' });
@@ -412,7 +429,7 @@ app.post('/create-product', uploads.single('photo'), async (req, res) => {
 
 app.get('/products', async (req, res) => {
   try {
-    const result = await pool.query('SELECT id, name, price, description, photo, category FROM aman.products');
+    const result = await pool.query('SELECT id, name, price, description, photo, category FROM aman.products ORDER BY id ASC');
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching products:', err);
@@ -484,9 +501,10 @@ app.get('/products/:id', async (req, res) => {
 app.put('/products/:id', (req, res) => {
   upload(req, res, async (err) => {
     const { id } = req.params;
+    console.log(id);
     const { name, price, description, category } = req.body;
     let photo = req.file ? req.file.path : null;
-    // console.log(name, price, description, category, photo);
+    console.log(name, price, description, category, photo);
 
     if (!name || !price || !description || !category) {
       return res.status(400).send({ message: 'Name, price, description, and category are required' });
@@ -1069,28 +1087,41 @@ app.put('/users/:userId/cancel-orders', async (req, res) => {
 });
 
 
-// Endpoint to fetch order history for a specific user
+// Endpoint to fetch order history for a specific user with pagination
 app.get('/order-history/:userId', async (req, res) => {
   const userId = req.params.userId;
+  const page = parseInt(req.query.page) || 1;
+  const limit = parseInt(req.query.limit) || 10;
+  const offset = (page - 1) * limit;
 
   try {
-    // Fetch order history for the user with product images
+    // Fetch total count of orders for the user
+    const countResult = await pool.query(
+      `SELECT COUNT(*) AS total FROM aman.order_history WHERE user_id = $1`,
+      [userId]
+    );
+    const totalOrders = parseInt(countResult.rows[0].total);
+    const totalPages = Math.ceil(totalOrders / limit);
+
+    // Fetch paginated order history for the user with product images
     const ordersResult = await pool.query(
       `SELECT oh.*, p.photo 
        FROM aman.order_history oh
        JOIN aman.products p ON oh.product_id = p.id
        WHERE oh.user_id = $1
-       ORDER BY oh.created_at DESC`,
-      [userId]
+       ORDER BY oh.created_at DESC
+       LIMIT $2 OFFSET $3`,
+      [userId, limit, offset]
     );
     const orders = ordersResult.rows;
 
-    res.json(orders);
+    res.json({ orders, totalPages });
   } catch (error) {
     console.error('Error fetching order history:', error);
     res.status(500).json({ success: false, error: 'Error fetching order history' });
   }
 });
+
 
 
 
@@ -1231,15 +1262,73 @@ app.get('/api/orders', async (req, res) => {
 });
 
 
+// app.get('/api/users', async (req, res) => {
+//   try {
+//     const result = await pool.query('SELECT DISTINCT user_id FROM aman.order_history');
+//     res.json(result.rows);
+//   } catch (err) {
+//     console.error(err);
+//     res.status(500).send('Server Error');
+//   }
+// });
+
 app.get('/api/users', async (req, res) => {
   try {
-    const result = await pool.query('SELECT DISTINCT user_id FROM aman.order_history');
+    const result = await pool.query(`
+      SELECT DISTINCT u.id, u.username 
+      FROM aman.users u
+      JOIN aman.order_history oh ON u.id = oh.user_id
+    `);
     res.json(result.rows);
   } catch (err) {
     console.error(err);
     res.status(500).send('Server Error');
   }
 });
+
+
+
+// Endpoint to fetch messages from aman.contact table
+app.get('/api/getMessages', async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query('SELECT * FROM aman.contacts');
+    const messages = result.rows;
+    client.release();
+    res.json(messages);
+  } catch (err) {
+    console.error('Error fetching messages:', err);
+    res.status(500).json({ error: 'Error fetching messages' });
+  }
+});
+
+
+
+// Route to fetch order history for graph
+// Example route to fetch order history grouped by month
+// Example route to fetch order history grouped by month
+app.get('/api/order-history', async (req, res) => {
+  try {
+    const client = await pool.connect();
+    const result = await client.query(`
+      SELECT 
+        to_char(created_at, 'Month') AS month,
+        COUNT(*) AS total_orders
+      FROM 
+        aman.order_history
+      GROUP BY 
+        to_char(created_at, 'Month')
+      ORDER BY 
+        MIN(EXTRACT(MONTH FROM created_at));
+    `);
+    client.release();
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching order history:', err);
+    res.status(500).json({ error: 'Internal server error' });
+  }
+});
+
 
 
 

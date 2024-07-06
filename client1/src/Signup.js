@@ -10,6 +10,7 @@ const Signup = () => {
   const [role, setRole] = useState('user'); // Added state for role
   const [showPassword, setShowPassword] = useState(false);
   const [image, setImage] = useState(null);
+  const [notification, setNotification] = useState(null); // State for notification
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -25,9 +26,11 @@ const Signup = () => {
     try {
       const response = await axios.post('http://localhost:5000/signup', formData);
       console.log(response.data);
+      setNotification('Signup successful! Please check your email for further instructions.');
       navigate('/login');
     } catch (error) {
       console.error('Error:', error.response ? error.response.data.message : error.message);
+      setNotification('Signup failed. Please try again.');
     }
   };
 
@@ -35,6 +38,11 @@ const Signup = () => {
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md text-center">
         <h2 className="text-2xl font-bold mb-6">Signup</h2>
+        {notification && (
+          <div className="bg-green-200 text-green-800 p-2 mb-4 rounded">
+            {notification}
+          </div>
+        )}
         <form onSubmit={handleSubmit}>
           <input
             type="text"

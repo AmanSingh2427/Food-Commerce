@@ -11,6 +11,7 @@
   "dependencies": {
     "bcryptjs": "^2.4.3",
     "body-parser": "^1.20.2",
+    "chart.js": "^4.4.3",
     "cors": "^2.8.5",
     "express": "^4.19.2",
     "fs": "^0.0.1-security",
@@ -20,6 +21,7 @@
     "multer": "^1.4.5-lts.1",
     "nodemailer": "^6.9.13",
     "pg": "^8.11.5",
+    "react-chartjs-2": "^5.2.0",
     "uuid": "^10.0.0"
   }
 }

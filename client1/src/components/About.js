@@ -12,7 +12,8 @@ const About = () => {
   return (
     <>
       <Navbar />
-      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center py-10">
+      <div className="flex flex-col min-h-screen">
+      <div className="min-h-screen bg-gray-100 flex flex-col items-center justify-center py-10 flex-grow">
         <h1 className="text-3xl font-bold mb-8">About Our Website</h1>
         <div className="flex flex-wrap justify-center">
           <div className="max-w-sm rounded overflow-hidden shadow-lg bg-white m-4">
@@ -82,6 +83,7 @@ const About = () => {
         </div>
       </div>
       <Footer />
+      </div>
     </>
   );
 };

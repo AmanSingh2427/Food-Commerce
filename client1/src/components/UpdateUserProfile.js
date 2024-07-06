@@ -1,6 +1,8 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import Navbar from './Navbar'
+import Footer from '../Footer'
 
 const UpdateProfile = () => {
   const [username, setUsername] = useState('');
@@ -60,7 +62,9 @@ const UpdateProfile = () => {
 
   return (
     <>
-    <div className="flex justify-center items-center h-screen bg-gray-100">
+    <Navbar/>
+    <div className="flex flex-col min-h-screen">
+    <div className="flex justify-center items-center h-screen bg-gray-100 flex-grow">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md text-center">
         <h2 className="text-2xl font-bold mb-6">Update Profile</h2>
         <form onSubmit={handleSubmit}>
@@ -101,6 +105,8 @@ const UpdateProfile = () => {
           </button>
         </form>
       </div>
+    </div>
+    <Footer/>
     </div>
     </>
   );

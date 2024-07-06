@@ -7,6 +7,7 @@ const OrderHistory = () => {
   const [orders, setOrders] = useState([]);
   const [userIds, setUserIds] = useState([]);
   const [selectedUserId, setSelectedUserId] = useState('');
+  const [selectedUsername, setSelectedUsername] = useState('');
   const [date, setDate] = useState('');
   const [currentPage, setCurrentPage] = useState(1);
   const [totalOrders, setTotalOrders] = useState(0);
@@ -37,6 +38,7 @@ const OrderHistory = () => {
   const fetchUserIds = async () => {
     try {
       const response = await axios.get('http://localhost:5000/api/users');
+      console.log('User data fetched:', response.data); // Log user data
       setUserIds(response.data);
     } catch (error) {
       console.error('Error fetching user IDs:', error);
@@ -131,26 +133,28 @@ const OrderHistory = () => {
         <div className="relative">
           <input
             type="text"
-            placeholder="Search by User ID"
-            value={selectedUserId}
+            placeholder="Search by Username"
+            value={selectedUsername}
             onClick={() => setShowUserSearch(true)}
-            onChange={(e) => setSelectedUserId(e.target.value)}
+            onChange={(e) => setSelectedUsername(e.target.value)}
             className="p-2 border rounded w-48"
           />
           {showUserSearch && userIds.length > 0 && (
             <ul className="absolute bg-white border mt-1 rounded w-full max-h-40 overflow-y-auto">
               {userIds
-                .filter((user) => user.user_id.toString().includes(selectedUserId))
+                .filter((user) => user.username.toLowerCase().includes(selectedUsername.toLowerCase()))
                 .map((user) => (
                   <li
-                    key={user.user_id}
+                    key={user.id} // Make sure this matches the property name returned by your API
                     className="p-2 cursor-pointer hover:bg-gray-200"
                     onClick={() => {
-                      setSelectedUserId(user.user_id.toString());
+                      console.log('User selected:', user); // Log selected user
+                      setSelectedUserId(user.id?.toString() || ''); // Safely access properties
+                      setSelectedUsername(user.username || '');
                       setShowUserSearch(false);
                     }}
                   >
-                    {user.user_id}
+                    {user.username}
                   </li>
                 ))}
             </ul>
@@ -194,27 +198,25 @@ const OrderHistory = () => {
               ))
             ) : (
               <tr>
-                <td colSpan="7" className="py-2 px-4 border text-center">
-                  No orders found
-                </td>
+                <td className="py-2 px-4 border" colSpan="7">No orders found.</td>
               </tr>
             )}
           </tbody>
         </table>
       </div>
-      <div className="flex justify-center mt-4">
+      <div className="flex justify-between mt-4">
         <button
           onClick={handlePreviousPage}
           disabled={currentPage === 1}
-          className={`px-4 py-2 mx-1 ${currentPage === 1 ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'} rounded`}
+          className={`px-4 py-2 rounded shadow-lg ${currentPage === 1 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
         >
           Previous
         </button>
-        <span className="px-4 py-2 mx-1">{`Page ${currentPage} of ${totalPages}`}</span>
         <button
           onClick={handleNextPage}
-          disabled={currentPage === totalPages}
-          className={`px-4 py-2 mx-1 ${currentPage === totalPages ? 'bg-gray-300 text-gray-700 cursor-not-allowed' : 'bg-gray-200 text-gray-700 hover:bg-gray-300'} rounded`}
+          disabled={currentPage === totalPages || orders.length === 0}
+          className={`px-4 py-2 rounded shadow-lg ${currentPage === totalPages || orders.length === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'
+            }`}
         >
           Next
         </button>

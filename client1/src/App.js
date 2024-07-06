@@ -19,8 +19,10 @@ import PurchaseHistory from './components/PurchaseHistory';
 import CreateProductForm from './components/CreateProductForm';
 import Layout from './Layout';
 import UserRequests from './components/UserRequests';
-import UpdateUserProfile from './components/UpdateUserProfile'
+import UpdateUserProfile from './components/UpdateUserProfile';
 import DownloadPdf from './components/DownloadPdf';
+import NotFound from './NotFound';
+import UserMessages from './components/UserMessges';
 
 const App = () => {
   const token = localStorage.getItem('token');
@@ -36,24 +38,28 @@ const App = () => {
 
           <Route path="/" element={<Navigate to={token ? (userRole === 'admin' ? '/adminhome' : '/home') : '/login'} />} />
 
+          {/* Admin routes */}
           <Route path="/adminhome" element={<PrivateRoute requiredRole="admin"><Layout><AdminHome /></Layout></PrivateRoute>} />
-          <Route path="/home" element={<PrivateRoute><Home /></PrivateRoute>} />
-          <Route path="/about" element={<PrivateRoute><About /></PrivateRoute>} />
-          <Route path="/contact" element={<PrivateRoute><Contact /></PrivateRoute>} />
-          <Route path="/updateadmin-profile" element={<PrivateRoute><Layout><UpdateProfile /></Layout></PrivateRoute>} />
+          <Route path="/updateadmin-profile" element={<PrivateRoute requiredRole="admin"><Layout><UpdateProfile /></Layout></PrivateRoute>} />
+          <Route path="/products" element={<PrivateRoute requiredRole="admin"><Layout><ProductsTable /></Layout></PrivateRoute>} />
+          <Route path="/create-product" element={<PrivateRoute requiredRole="admin"><Layout><CreateProductForm /></Layout></PrivateRoute>} />
+          <Route path="/user-requests" element={<PrivateRoute requiredRole="admin"><Layout><UserRequests /></Layout></PrivateRoute>} />
+          <Route path="/order-request" element={<PrivateRoute requiredRole="admin"><Layout><OrderRequest /></Layout></PrivateRoute>} />
+          <Route path="/update/:productId" element={<PrivateRoute requiredRole="admin"><Layout><UpdateProduct /></Layout></PrivateRoute>} />
+          <Route path="/download-pdf" element={<PrivateRoute requiredRole="admin"><Layout><DownloadPdf /></Layout></PrivateRoute>} />
+          <Route path="/user-message" element={<PrivateRoute requiredRole="admin"><Layout><UserMessages /></Layout></PrivateRoute>} />
 
-          <Route path="/updateuser-profile" element={<PrivateRoute><><UpdateUserProfile /></></PrivateRoute>} />
-          
-          <Route path="/products" element={<PrivateRoute><Layout><ProductsTable /></Layout></PrivateRoute>} />
-          <Route path="/create-product" element={<PrivateRoute><Layout><CreateProductForm /></Layout></PrivateRoute>} />
-          <Route path="/user-requests" element={<PrivateRoute><Layout><UserRequests /></Layout></PrivateRoute>} />
-          <Route path="/cart" element={<PrivateRoute><Cart /></PrivateRoute>} />
-          <Route path="/product-processing" element={<PrivateRoute><><ProductProcessing /></></PrivateRoute>} />
-          <Route path="/order-request" element={<PrivateRoute><Layout><OrderRequest /></Layout></PrivateRoute>} />
-          <Route path="/purchase-history" element={<PrivateRoute><><PurchaseHistory /></></PrivateRoute>} />
-          <Route path="/update/:productId" element={<PrivateRoute><Layout><UpdateProduct /></Layout></PrivateRoute>} />
-          <Route path="/download-pdf" element={<PrivateRoute><Layout><DownloadPdf /></Layout></PrivateRoute>} />
+          {/* User routes */}
+          <Route path="/home" element={<PrivateRoute requiredRole="user"><Home /></PrivateRoute>} />
+          <Route path="/about" element={<PrivateRoute requiredRole="user"><About /></PrivateRoute>} />
+          <Route path="/contact" element={<PrivateRoute requiredRole="user"><Contact /></PrivateRoute>} />
+          <Route path="/updateuser-profile" element={<PrivateRoute requiredRole="user"><UpdateUserProfile /></PrivateRoute>} />
+          <Route path="/cart" element={<PrivateRoute requiredRole="user"><Cart /></PrivateRoute>} />
+          <Route path="/product-processing" element={<PrivateRoute requiredRole="user"><ProductProcessing /></PrivateRoute>} />
+          <Route path="/purchase-history" element={<PrivateRoute requiredRole="user"><PurchaseHistory /></PrivateRoute>} />
+
           <Route path="/notauthorized" element={<NotAuthorized />} />
+          <Route path="*" element={<NotFound />} />
         </Routes>
       </div>
     </Router>

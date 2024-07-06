@@ -44,7 +44,8 @@ const ContactForm = () => {
   return (
     <>
       <Navbar />
-      <div className="relative h-screen md:h-[75vh]">
+      <div className="flex flex-col min-h-screen">
+      <div className="relative h-screen md:h-[75vh] flex-grow">
         <img src={headerImage} alt="Header" className="absolute w-full h-full object-cover" />
         <div className="absolute inset-0 flex items-center justify-center">
           <h1 className="text-4xl md:text-6xl text-white font-bold">Welcome to Our Restaurant</h1>
@@ -111,6 +112,7 @@ const ContactForm = () => {
         </div>
       </div>
       <Footer />
+      </div>
     </>
   );
 };
