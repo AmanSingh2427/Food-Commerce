@@ -131,7 +131,7 @@ app.post('/signup', async (req, res) => {
       );
 
       // Send email to the admin for approval
-      const adminEmail = 'thakuraman8630@gmail.com'; // Replace with the admin's email address
+      const adminEmail = 'sardarkhan2428@gmail.com'; // Replace with the admin's email address
       await sendEmail(
         adminEmail,
         'New User Registration Approval Needed',
@@ -740,7 +740,7 @@ app.post('/place-order/:userId', async (req, res) => {
     );
 
     // Send email to the admin
-    const adminEmail = 'thakuraman8630@gmail.com'; // Replace with the admin's email address
+    const adminEmail = 'sardarkhan2428@gmail.com'; // Replace with the admin's email address
       sendEmail(
       adminEmail,
       'New Order Placed',

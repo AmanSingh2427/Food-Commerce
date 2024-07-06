@@ -9,14 +9,14 @@ async function sendEmail(to, subject, htmlContent) {
       port: 587,
       secure: false, // use SSL
       auth: {
-        user: 'thakuraman8630@gmail.com', // Your Gmail email address
-        pass: 'sdqgihpkffcyipzj', // Your Gmail app-specific password
+        user: 'sardarkhan2428@gmail.com', // Your Gmail email address
+        pass: 'odopsilsxqfeuoeo', // Your Gmail app-specific password
       },
     });
 
     // Send email
     const info = await transporter.sendMail({
-      from: 'thakuraman8630@gmail.com', // Sender address
+      from: 'sardarkhan2428@gmail.com', // Sender address
       to, // Receiver email address 
       subject, // Subject line
       html: htmlContent, // HTML content from template
