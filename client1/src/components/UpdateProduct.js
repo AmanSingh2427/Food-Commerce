@@ -17,6 +17,7 @@ const UpdateProduct = () => {
     photo: ''
   });
   const [image, setImage] = useState(null);
+  const [notification, setNotification] = useState({ message: '', type: '' });
 
   useEffect(() => {
     if (!location.state?.product) {
@@ -46,13 +47,13 @@ const UpdateProduct = () => {
 
   const handleImageChange = (e) => {
     setImage(e.target.files[0]);
-    console.log("Selected image:", e.target.files[0]);
   };
 
   const handleSubmit = async (e) => {
     e.preventDefault();
     if (!product.name || !product.price || !product.description || !product.category) {
-      alert('Please fill in all required fields');
+      setNotification({ message: 'Please fill in all required fields', type: 'error' });
+      setTimeout(() => setNotification({ message: '', type: '' }), 2000);
       return;
     }
 
@@ -63,12 +64,6 @@ const UpdateProduct = () => {
     formData.append('category', product.category);
     if (image) {
       formData.append('photo', image);
-      console.log("Appended image:", image);
-    }
-
-    console.log("FormData contents:");
-    for (let [key, value] of formData.entries()) {
-      console.log(key, value);
     }
 
     try {
@@ -78,10 +73,15 @@ const UpdateProduct = () => {
           'Content-Type': 'multipart/form-data'
         }
       });
-      console.log('Product updated successfully!');
-      navigate('/products');
+      setNotification({ message: `Product ${product.name} updated successfully!`, type: 'success' });
+      setTimeout(() => {
+        setNotification({ message: '', type: '' });
+        navigate('/products');
+      }, 2000);
     } catch (err) {
       console.error('Error updating product:', err);
+      setNotification({ message: 'Error updating product. Please try again.', type: 'error' });
+      setTimeout(() => setNotification({ message: '', type: '' }), 2000);
     }
   };
 
@@ -91,6 +91,15 @@ const UpdateProduct = () => {
       <NavbarAdmin />
       <div className="container mx-auto mt-8 p-4">
         <h2 className="text-2xl font-bold mb-6 text-center">Update Product</h2>
+        {notification.message && (
+          <div
+            className={`mb-4 text-center text-white p-2 rounded ${
+              notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
+            } max-w-2xl mx-auto`}
+          >
+            {notification.message}
+          </div>
+        )}
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white p-8 rounded shadow-md">
           <div className="mb-4">
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name:</label>

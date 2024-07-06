@@ -424,12 +424,22 @@ app.post('/create-product', uploads.single('photo'), async (req, res) => {
   }
 });
 
-
-// server.js or routes/products.js
-
+// fetch all products on All Products page
 app.get('/products', async (req, res) => {
   try {
     const result = await pool.query('SELECT id, name, price, description, photo, category FROM aman.products ORDER BY id ASC');
+    res.json(result.rows);
+  } catch (err) {
+    console.error('Error fetching products:', err);
+    res.status(500).send('Server error');
+  }
+});
+
+// fetch product at updated page
+// server.js or routes/products.js
+app.get('/products', async (req, res) => {
+  try {
+    const result = await pool.query('SELECT id, name, price, description, photo, category FROM aman.products');
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching products:', err);

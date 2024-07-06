@@ -11,6 +11,7 @@ const Signup = () => {
   const [showPassword, setShowPassword] = useState(false);
   const [image, setImage] = useState(null);
   const [notification, setNotification] = useState(null); // State for notification
+  const [notificationType, setNotificationType] = useState(''); // State for notification type
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -27,10 +28,14 @@ const Signup = () => {
       const response = await axios.post('http://localhost:5000/signup', formData);
       console.log(response.data);
       setNotification('Signup successful! Please check your email for further instructions.');
-      navigate('/login');
+      setNotificationType('success');
+      setTimeout(() => {
+        navigate('/login');
+      }, 2000); // Redirect after 3 seconds
     } catch (error) {
       console.error('Error:', error.response ? error.response.data.message : error.message);
       setNotification('Signup failed. Please try again.');
+      setNotificationType('error');
     }
   };
 
@@ -39,7 +44,7 @@ const Signup = () => {
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md text-center">
         <h2 className="text-2xl font-bold mb-6">Signup</h2>
         {notification && (
-          <div className="bg-green-200 text-green-800 p-2 mb-4 rounded">
+          <div className={`p-2 mb-4 rounded ${notificationType === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
             {notification}
           </div>
         )}
@@ -87,6 +92,7 @@ const Signup = () => {
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 4.5C6.478 4.5 1.943 8.239.5 12c1.443 3.761 5.978 7.5 11.5 7.5s10.057-3.739 11.5-7.5C22.057 8.239 17.522 4.5 12 4.5z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9z" />
                   <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 10.5a1.5 1.5 0 110 3 1.5 1.5 0 010-3z" />
+                  <path strokeLinecap="round" strokeLinejoin="round" strokeWidth={2} d="M12 7.5a4.5 4.5 0 100 9 4.5 4.5 0 000-9z" />
                 </svg>
               ) : (
                 <svg xmlns="http://www.w3.org/2000/svg" className="h-6 w-6" fill="none" viewBox="0 0 24 24" stroke="currentColor">

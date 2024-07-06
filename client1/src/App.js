@@ -23,6 +23,7 @@ import UpdateUserProfile from './components/UpdateUserProfile';
 import DownloadPdf from './components/DownloadPdf';
 import NotFound from './NotFound';
 import UserMessages from './components/UserMessges';
+import AllProducts from './components/AllProducts'
 
 const App = () => {
   const token = localStorage.getItem('token');
@@ -42,6 +43,7 @@ const App = () => {
           <Route path="/adminhome" element={<PrivateRoute requiredRole="admin"><Layout><AdminHome /></Layout></PrivateRoute>} />
           <Route path="/updateadmin-profile" element={<PrivateRoute requiredRole="admin"><Layout><UpdateProfile /></Layout></PrivateRoute>} />
           <Route path="/products" element={<PrivateRoute requiredRole="admin"><Layout><ProductsTable /></Layout></PrivateRoute>} />
+          <Route path="/all-products" element={<PrivateRoute requiredRole="admin"><Layout><AllProducts /></Layout></PrivateRoute>} />
           <Route path="/create-product" element={<PrivateRoute requiredRole="admin"><Layout><CreateProductForm /></Layout></PrivateRoute>} />
           <Route path="/user-requests" element={<PrivateRoute requiredRole="admin"><Layout><UserRequests /></Layout></PrivateRoute>} />
           <Route path="/order-request" element={<PrivateRoute requiredRole="admin"><Layout><OrderRequest /></Layout></PrivateRoute>} />

@@ -1,7 +1,7 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Dashboard from './Dashboard'
+import Dashboard from './Dashboard';
 import NavbarAdmin from './NavbarAdmin';
 
 const CreateProductForm = () => {
@@ -12,18 +12,19 @@ const CreateProductForm = () => {
     description: '',
     category: ''
   });
+  const [notification, setNotification] = useState({ message: '', type: '' });
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
     const { name, value } = e.target;
-    setNewProduct(prevState => ({
+    setNewProduct((prevState) => ({
       ...prevState,
       [name]: value
     }));
   };
 
   const handleFileChange = (e) => {
-    setNewProduct(prevState => ({
+    setNewProduct((prevState) => ({
       ...prevState,
       photo: e.target.files[0]
     }));
@@ -45,102 +46,115 @@ const CreateProductForm = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
-      navigate('/adminhome'); // Navigate to admin home page on success
-     
+      setNotification({ message: 'Product created successfully!', type: 'success' });
+      setTimeout(() => {
+        setNotification({ message: '', type: '' });
+        navigate('/adminhome'); // Navigate to admin home page on success
+      }, 2000);
     } catch (err) {
-      console.error('Error creating product:', err);
+      setNotification({ message: 'Error creating product', type: 'error' });
+      setTimeout(() => {
+        setNotification({ message: '', type: '' });
+      }, 2000);
     }
   };
 
   return (
-   <>
-   <Dashboard/>
-   <NavbarAdmin/>
-   <div className="flex justify-center items-center min-h-screen bg-gray-100">
-      <form onSubmit={handleSubmit} className="w-full max-w-lg bg-white p-8 rounded shadow-md">
-        <h2 className="block text-gray-700 text-lg font-bold mb-6 text-center">Create New Product</h2>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
-            Product Name
-          </label>
-          <input
-            type="text"
-            name="name"
-            value={newProduct.name}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          />
+    <>
+      <Dashboard />
+      <NavbarAdmin />
+      <div className="flex justify-center items-center min-h-screen bg-gray-100">
+        <div className="w-full max-w-lg">
+          {notification.message && (
+            <div className={`p-2 mb-4 text-center ${notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
+              {notification.message}
+            </div>
+          )}
+          <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md">
+            <h2 className="block text-gray-700 text-lg font-bold mb-6 text-center">Create New Product</h2>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="name">
+                Product Name
+              </label>
+              <input
+                type="text"
+                name="name"
+                value={newProduct.name}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="price">
+                Price
+              </label>
+              <input
+                type="number"
+                name="price"
+                value={newProduct.price}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="photo">
+                Photo
+              </label>
+              <input
+                type="file"
+                name="photo"
+                onChange={handleFileChange}
+                className="w-full px-3 py-2 border rounded"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
+                Description
+              </label>
+              <textarea
+                name="description"
+                value={newProduct.description}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded"
+                required
+              />
+            </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="category">
+                Category
+              </label>
+              <select
+                name="category"
+                value={newProduct.category}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded"
+                required
+              >
+                <option value="">Select a category</option>
+                <option value="Appetizers">Appetizers</option>
+                <option value="Main Courses">Main Courses</option>
+                <option value="Entrees">Entrees</option>
+                <option value="Desserts">Desserts</option>
+                <option value="Beverages">Beverages</option>
+                <option value="Specialty Items">Specialty Items</option>
+                <option value="Kids' Menu">Kids' Menu</option>
+                <option value="Seasonal Specials">Seasonal Specials</option>
+                <option value="Healthy Options">Healthy Options</option>
+              </select>
+            </div>
+            <button
+              type="submit"
+              className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600 transition-colors"
+            >
+              Create Product
+            </button>
+          </form>
         </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="price">
-            Price
-          </label>
-          <input
-            type="number"
-            name="price"
-            value={newProduct.price}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="photo">
-            Photo
-          </label>
-          <input
-            type="file"
-            name="photo"
-            onChange={handleFileChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="description">
-            Description
-          </label>
-          <textarea
-            name="description"
-            value={newProduct.description}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          />
-        </div>
-        <div className="mb-4">
-          <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="category">
-            Category
-          </label>
-          <select
-            name="category"
-            value={newProduct.category}
-            onChange={handleInputChange}
-            className="w-full px-3 py-2 border rounded"
-            required
-          >
-            <option value="">Select a category</option>
-            <option value="Appetizers">Appetizers</option>
-            <option value="Main Courses">Main Courses</option>
-            <option value="Entrees">Entrees</option>
-            <option value="Desserts">Desserts</option>
-            <option value="Beverages">Beverages</option>
-            <option value="Specialty Items">Specialty Items</option>
-            <option value="Kids' Menu">Kids' Menu</option>
-            <option value="Seasonal Specials">Seasonal Specials</option>
-            <option value="Healthy Options">Healthy Options</option>
-          </select>
-        </div>
-        <button
-          type="submit"
-          className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600 transition-colors"
-        >
-          Create Product
-        </button>
-      </form>
-    </div>
-   </>
+      </div>
+    </>
   );
 };
 

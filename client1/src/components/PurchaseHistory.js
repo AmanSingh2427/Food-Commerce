@@ -11,6 +11,7 @@ const PurchaseHistory = () => {
   const [ratings, setRatings] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
+  const [notification, setNotification] = useState('');
   const navigate = useNavigate();
   const itemsPerPage = 10;
 
@@ -49,10 +50,16 @@ const PurchaseHistory = () => {
         orderId,
         rating: ratings[orderId],
       });
-      alert('Rating submitted successfully');
+      setNotification(`Rating submitted successfully for order ID: ${orderId}`);
+      setTimeout(() => {
+        setNotification('');
+      }, 2000);
     } catch (error) {
       console.error('Error submitting rating:', error);
-      alert('Failed to submit rating');
+      setNotification('Failed to submit rating');
+      setTimeout(() => {
+        setNotification('');
+      }, 2000);
     }
   };
 
@@ -66,6 +73,11 @@ const PurchaseHistory = () => {
       <div className="flex flex-col min-h-screen">
         <div className="container mx-auto mt-8 flex-grow">
           <h2 className="text-2xl font-bold mb-4">Purchase History</h2>
+          {notification && (
+            <div className="mb-4 text-center text-white bg-green-500 p-2 rounded">
+              {notification}
+            </div>
+          )}
           {loading ? (
             <p>Loading...</p>
           ) : orderHistory.length === 0 ? (

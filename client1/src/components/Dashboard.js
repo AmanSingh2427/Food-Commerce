@@ -48,15 +48,15 @@ const Dashboard = () => {
           </Link>
         </li>
         <li className="py-2 px-4 hover:bg-gray-300">
-          <Link to="/products" className="block flex items-center">
-            <BsCalendarEventFill className="mr-2" />
-            Update Product
+          <Link to="/all-products" className="block flex items-center">
+            <IoDocumentSharp className="mr-2" />
+            Our Products
           </Link>
         </li>
         <li className="py-2 px-4 hover:bg-gray-300">
           <Link to="/products" className="block flex items-center">
-            <IoDocumentSharp className="mr-2" />
-            Our Products
+            <BsCalendarEventFill className="mr-2" />
+            Update Product
           </Link>
         </li>
         <li className="py-2 px-4 hover:bg-gray-300">
