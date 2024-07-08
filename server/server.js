@@ -1250,18 +1250,30 @@ app.post('/api/contact', async (req, res) => {
 
 
 // server.js or a similar backend file
+// server.js or a similar backend file
 app.get('/api/orders', async (req, res) => {
   const { userId, date, page = 1, limit = 10 } = req.query;
   const offset = (page - 1) * limit;
 
-  let query = `SELECT * FROM aman.order_history WHERE 1=1`;
-  if (userId) query += ` AND user_id = ${userId}`;
-  if (date) query += ` AND DATE(created_at) = '${date}'`;
-  query += ` LIMIT ${limit} OFFSET ${offset}`;
+  let query = `
+    SELECT oh.*, u.username
+    FROM aman.order_history oh
+    LEFT JOIN aman.users u ON oh.user_id = u.id
+    WHERE 1=1
+  `;
+  if (userId) query += ` AND oh.user_id = ${userId}`;
+  if (date) query += ` AND DATE(oh.created_at) = '${date}'`;
+  query += ` ORDER BY oh.created_at DESC LIMIT ${limit} OFFSET ${offset}`;
 
   try {
     const { rows } = await pool.query(query);
-    const total = await pool.query(`SELECT COUNT(*) FROM aman.order_history WHERE 1=1`);
+    const total = await pool.query(`
+      SELECT COUNT(*) 
+      FROM aman.order_history 
+      WHERE 1=1 
+      ${userId ? `AND user_id = ${userId}` : ''} 
+      ${date ? `AND DATE(created_at) = '${date}'` : ''}
+    `);
     const totalOrders = total.rows[0].count;
 
     res.json({ orders: rows, totalOrders });
@@ -1270,6 +1282,7 @@ app.get('/api/orders', async (req, res) => {
     res.status(500).send('Server Error');
   }
 });
+
 
 
 // app.get('/api/users', async (req, res) => {
@@ -1302,7 +1315,7 @@ app.get('/api/users', async (req, res) => {
 app.get('/api/getMessages', async (req, res) => {
   try {
     const client = await pool.connect();
-    const result = await client.query('SELECT * FROM aman.contacts');
+    const result = await client.query('SELECT * FROM aman.contacts order by id desc');
     const messages = result.rows;
     client.release();
     res.json(messages);

@@ -81,7 +81,7 @@ const OrderHistory = () => {
       const rowsPerPage = 30; // Number of rows per page
       const pageWidth = doc.internal.pageSize.getWidth();
       const margin = 40;
-      const cellWidth = (pageWidth - margin * 2) / 7; // 7 columns
+      const cellWidth = (pageWidth - margin * 2) / 8; // 8 columns including username
       let rowCount = 0;
 
       const generateTableHeaders = () => {
@@ -89,11 +89,12 @@ const OrderHistory = () => {
         doc.setFont('helvetica', 'bold');
         doc.text('Order ID', margin, margin);
         doc.text('User ID', margin + cellWidth, margin);
-        doc.text('Product ID', margin + cellWidth * 2, margin);
-        doc.text('Quantity', margin + cellWidth * 3, margin);
-        doc.text('Status', margin + cellWidth * 4, margin);
-        doc.text('Created At', margin + cellWidth * 5, margin);
-        doc.text('Rating', margin + cellWidth * 6, margin);
+        doc.text('Username', margin + cellWidth * 2, margin); // Added Username column
+        doc.text('Product ID', margin + cellWidth * 3, margin);
+        doc.text('Quantity', margin + cellWidth * 4, margin);
+        doc.text('Status', margin + cellWidth * 5, margin);
+        doc.text('Created At', margin + cellWidth * 6, margin);
+        doc.text('Rating', margin + cellWidth * 7, margin);
       };
 
       const generateTableContent = (orders, startY) => {
@@ -102,11 +103,12 @@ const OrderHistory = () => {
           const y = startY + index * 20;
           doc.text(order.order_id?.toString() || '', margin, y);
           doc.text(order.user_id?.toString() || '', margin + cellWidth, y);
-          doc.text(order.product_id?.toString() || '', margin + cellWidth * 2, y);
-          doc.text(order.quantity?.toString() || '', margin + cellWidth * 3, y);
-          doc.text(order.status || '', margin + cellWidth * 4, y);
-          doc.text(new Date(order.created_at).toLocaleDateString() || '', margin + cellWidth * 5, y);
-          doc.text(order.rating?.toString() || '', margin + cellWidth * 6, y);
+          doc.text(order.username || '', margin + cellWidth * 2, y); // Display username
+          doc.text(order.product_id?.toString() || '', margin + cellWidth * 3, y);
+          doc.text(order.quantity?.toString() || '', margin + cellWidth * 4, y);
+          doc.text(order.status || '', margin + cellWidth * 5, y);
+          doc.text(new Date(order.created_at).toLocaleDateString() || '', margin + cellWidth * 6, y);
+          doc.text(order.rating?.toString() || '', margin + cellWidth * 7, y);
         });
       };
 
@@ -176,6 +178,7 @@ const OrderHistory = () => {
             <tr className="bg-gray-100">
               <th className="py-2 px-4 border">Order ID</th>
               <th className="py-2 px-4 border">User ID</th>
+              <th className="py-2 px-4 border">Username</th>
               <th className="py-2 px-4 border">Product ID</th>
               <th className="py-2 px-4 border">Quantity</th>
               <th className="py-2 px-4 border">Status</th>
@@ -189,6 +192,7 @@ const OrderHistory = () => {
                 <tr key={order.id}>
                   <td className="py-2 px-4 border">{order.order_id}</td>
                   <td className="py-2 px-4 border">{order.user_id}</td>
+                  <td className="py-2 px-4 border">{order.username}</td>
                   <td className="py-2 px-4 border">{order.product_id}</td>
                   <td className="py-2 px-4 border">{order.quantity}</td>
                   <td className="py-2 px-4 border">{order.status}</td>
@@ -198,7 +202,7 @@ const OrderHistory = () => {
               ))
             ) : (
               <tr>
-                <td className="py-2 px-4 border" colSpan="7">No orders found.</td>
+                <td className="py-2 px-4 border" colSpan="8">No orders found.</td>
               </tr>
             )}
           </tbody>
@@ -214,9 +218,8 @@ const OrderHistory = () => {
         </button>
         <button
           onClick={handleNextPage}
-          disabled={currentPage === totalPages || orders.length === 0}
-          className={`px-4 py-2 rounded shadow-lg ${currentPage === totalPages || orders.length === 0 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'
-            }`}
+          disabled={currentPage === totalPages}
+          className={`px-4 py-2 rounded shadow-lg ${currentPage === totalPages ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
         >
           Next
         </button>

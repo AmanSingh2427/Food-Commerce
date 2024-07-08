@@ -1,11 +1,11 @@
 import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
-import Dashboard from './Dashboard';
 import NavbarAdmin from './NavbarAdmin';
 
 const ProductsTable = () => {
   const [products, setProducts] = useState([]);
+  const [notification, setNotification] = useState('');
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -38,7 +38,7 @@ const ProductsTable = () => {
     }
   };
 
-  const handleDelete = async (id, imagePath) => {
+  const handleDelete = async (id, name, imagePath) => {
     try {
       await axios.delete(`http://localhost:5000/products/${id}`, {
         headers: {
@@ -48,11 +48,12 @@ const ProductsTable = () => {
       setProducts(products.filter(product => product.id !== id)); // Update state after deletion
       console.log('Product deleted successfully!');
 
-      // Delete the image from the server
-      if (imagePath) {
-        await axios.delete(`http://localhost:5000/${imagePath}`);
-        console.log('Product image deleted successfully!');
-      }
+
+      // Set the notification message
+      setNotification(`Product "${name}" deleted successfully!`);
+      setTimeout(() => {
+        setNotification('');
+      }, 3000);
     } catch (err) {
       console.error('Error deleting product:', err);
     }
@@ -63,6 +64,13 @@ const ProductsTable = () => {
       <NavbarAdmin />
       <div className="container mx-auto mt-8">
         <h2 className="text-2xl font-bold mb-4">Our Products</h2>
+        {notification && (
+          <div className="fixed bottom-0 left-0 right-0 mb-4 flex justify-center">
+            <div className="bg-green-500 text-white py-2 px-4 rounded">
+              {notification}
+            </div>
+          </div>
+        )}
         <div className="overflow-x-auto">
           <table className="min-w-full bg-white border border-gray-200">
             <thead>
@@ -103,7 +111,7 @@ const ProductsTable = () => {
                       Update
                     </button>
                     <button
-                      onClick={() => handleDelete(product.id, product.photo)}
+                      onClick={() => handleDelete(product.id, product.name, product.photo)}
                       className="bg-red-500 text-white px-4 py-2 rounded hover:bg-red-600 flex-1"
                     >
                       Delete

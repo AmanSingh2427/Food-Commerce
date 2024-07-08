@@ -1,9 +1,12 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import NavbarAdmin from './NavbarAdmin';
+import { useNavigate } from 'react-router-dom';
 
 const OrderRequest = () => {
   const [orders, setOrders] = useState([]);
+  const [notification, setNotification] = useState(null);
+  const navigate = useNavigate();
 
   useEffect(() => {
     const fetchOrders = async () => {
@@ -19,7 +22,7 @@ const OrderRequest = () => {
       }
     };
     fetchOrders();
-  }, []);
+  }, [notification]); // Added notification as a dependency
 
   const handleAcceptUserOrders = async (userId) => {
     try {
@@ -30,9 +33,18 @@ const OrderRequest = () => {
       });
       if (response.data.success) {
         setOrders(orders.filter(order => order.user_id !== userId));
+        setNotification({ type: 'success', message: 'Orders accepted successfully!', color: 'green' });
+        setTimeout(() => {
+          setNotification(null);
+        }, 2000); // Remove notification after 2 seconds
       }
     } catch (err) {
       console.error('Error accepting orders:', err);
+      setNotification({ type: 'error', message: 'Error accepting orders. Please try again.', color: 'red' });
+      navigate('/order-request');
+      setTimeout(() => {
+        setNotification(null);
+      }, 2000); // Remove notification after 2 seconds
     }
   };
 
@@ -45,10 +57,22 @@ const OrderRequest = () => {
       });
       if (response.data.success) {
         setOrders(orders.filter(order => order.user_id !== userId));
+        setNotification({ type: 'success', message: 'Orders canceled successfully!', color: 'red' });
+        setTimeout(() => {
+          setNotification(null);
+        }, 2000); // Remove notification after 2 seconds
       }
     } catch (err) {
       console.error('Error canceling orders:', err);
+      setNotification({ type: 'error', message: 'Error canceling orders. Please try again.', color: 'red' });
+      setTimeout(() => {
+        setNotification(null);
+      }, 2000); // Remove notification after 2 seconds
     }
+  };
+
+  const clearNotification = () => {
+    setNotification(null);
   };
 
   const groupedOrders = orders.reduce((acc, order) => {
@@ -64,6 +88,14 @@ const OrderRequest = () => {
       <NavbarAdmin />
       <div className="container mx-auto mt-8">
         <h2 className="text-2xl font-bold mb-4">Order Requests</h2>
+        {notification && (
+          <div className={`bg-${notification.color}-500 text-white p-4 mb-4`}>
+            {notification.message}
+            <button onClick={clearNotification} className="float-right">
+              &#x2715;
+            </button>
+          </div>
+        )}
         {Object.keys(groupedOrders).length > 0 ? (
           Object.keys(groupedOrders).map(userId => (
             <div key={userId} className="bg-white shadow-md rounded-lg overflow-hidden mb-6">
