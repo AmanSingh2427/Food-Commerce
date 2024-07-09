@@ -24,6 +24,7 @@ import DownloadPdf from './components/DownloadPdf';
 import NotFound from './NotFound';
 import UserMessages from './components/UserMessges';
 import AllProducts from './components/AllProducts'
+import ConfirmOrder from './components/ConfirmOrder';
 
 const App = () => {
   const token = localStorage.getItem('token');
@@ -59,6 +60,7 @@ const App = () => {
           <Route path="/cart" element={<PrivateRoute requiredRole="user"><Cart /></PrivateRoute>} />
           <Route path="/product-processing" element={<PrivateRoute requiredRole="user"><ProductProcessing /></PrivateRoute>} />
           <Route path="/purchase-history" element={<PrivateRoute requiredRole="user"><PurchaseHistory /></PrivateRoute>} />
+          <Route path="/confirm-order" element={<PrivateRoute requiredRole="user"><ConfirmOrder /></PrivateRoute>} />
 
           <Route path="/notauthorized" element={<NotAuthorized />} />
           <Route path="*" element={<NotFound />} />

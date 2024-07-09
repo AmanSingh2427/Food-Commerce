@@ -21,6 +21,7 @@ const Navbar = ({ setFilteredProducts }) => {
     const fetchCartCount = async () => {
       try {
         const response = await axios.get(`http://localhost:5000/cart/${userId}`);
+        console.log(response.data.length);
         setCartCount(response.data.length);
       } catch (error) {
         console.error('Error fetching cart count:', error);

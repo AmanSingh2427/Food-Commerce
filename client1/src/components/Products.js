@@ -73,7 +73,8 @@ const Products = () => {
     try {
       const response = await axios.post('http://localhost:5000/add-to-cart', {
         userId,
-        productId
+        productId,
+        quantity: 1 // Assuming each product adds 1 quantity by default
       });
       console.log('Product added to cart:', response.data);
       setCartCount(prevCount => prevCount + 1);
@@ -85,6 +86,7 @@ const Products = () => {
       console.error('Error adding product to cart:', err);
     }
   };
+  
 
   const loadMoreProducts = () => {
     setVisibleProducts(prevVisible => prevVisible + 9);

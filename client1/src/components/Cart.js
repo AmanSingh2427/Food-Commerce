@@ -79,14 +79,10 @@ const Cart = () => {
         setTotalPayableAmount(totalPayable);
     };
 
-    const placeOrder = async () => {
-        try {
-            await axios.post(`http://localhost:5000/place-order/${userId}`);
-            console.log('Order placed successfully');
-            navigate('/product-processing'); // Navigate to the product processing page
-        } catch (error) {
-            console.error('Error placing order:', error);
-        }
+    const placeOrder = () => {
+        navigate('/confirm-order', {
+            state: { userId, totalPayableAmount },
+        });
     };
 
     const redirectToPurchaseHistory = () => {
@@ -99,115 +95,95 @@ const Cart = () => {
 
     return (
         <>
-        <Navbar/>
-        <div className="flex flex-col min-h-screen">
-        <div className="container mx-auto mt-8 flex-grow">
-            <div className="flex justify-between mb-4">
-                <h2 className="text-2xl font-bold">Your Cart</h2>
-                <div>
-                    <button onClick={redirectToProductProcessing} className="bg-yellow-500 text-white px-4 py-2 rounded mr-2">
-                        Track Product
-                    </button>
-                    <button onClick={redirectToPurchaseHistory} className="bg-green-500 text-white px-4 py-2 rounded">
-                        Purchase History
-                    </button>
+            <Navbar />
+            <div className="flex flex-col min-h-screen">
+                <div className="container mx-auto mt-8 flex-grow">
+                    <div className="flex justify-between mb-4">
+                        <h2 className="text-2xl font-bold">Your Cart</h2>
+                        <div>
+                            <button onClick={redirectToProductProcessing} className="bg-yellow-500 text-white px-4 py-2 rounded mr-2">
+                                Track Product
+                            </button>
+                            <button onClick={redirectToPurchaseHistory} className="bg-green-500 text-white px-4 py-2 rounded">
+                                Purchase History
+                            </button>
+                        </div>
+                    </div>
+                    {cartItems.length > 0 ? (
+                        <div className="bg-white shadow-md rounded-lg overflow-hidden">
+                            <table className="min-w-full">
+                                <thead>
+                                    <tr className="text-center border-t">
+                                        <th className="py-2 px-4">Product</th>
+                                        <th className="py-2 px-4">Name</th>
+                                        <th className="py-2 px-4">Price</th>
+                                        <th className="py-2 px-4">Quantity</th>
+                                        <th className="py-2 px-4">Total</th>
+                                    </tr>
+                                </thead>
+                                <tbody>
+                                    {cartItems.map((item) => (
+                                        <tr key={item.id} className="text-center border-t">
+                                            <td className="py-2 px-4">
+                                                <img
+                                                    src={`http://localhost:5000/uploads/${item.photo}`}
+                                                    alt={item.name}
+                                                    className="w-16 h-16 object-cover rounded"
+                                                />
+                                            </td>
+                                            <td className="py-2 px-4">{item.name}</td>
+                                            <td className="py-2 px-4">${Number(item.price).toFixed(2)}</td>
+                                            <td className="py-2 px-4 flex items-center justify-center space-x-2">
+                                                <button
+                                                    className="bg-gray-300 px-2 rounded"
+                                                    onClick={() => updateQuantity(item.id, item.quantity - 1)}
+                                                >
+                                                    -
+                                                </button>
+                                                <span>{item.quantity}</span>
+                                                <button
+                                                    className="bg-gray-300 px-2 rounded"
+                                                    onClick={() => updateQuantity(item.id, item.quantity + 1)}
+                                                >
+                                                    +
+                                                </button>
+                                            </td>
+                                            <td className="py-2 px-4">${(Number(item.price) * item.quantity).toFixed(2)}</td>
+                                        </tr>
+                                    ))}
+                                </tbody>
+                            </table>
+                            <div className="p-4 flex justify-end">
+                                <div className="flex items-center">
+                                    <span className="font-semibold mr-2">Select State:</span>
+                                    <select
+                                        value={selectedState}
+                                        onChange={(e) => setSelectedState(e.target.value)}
+                                        className="border border-gray-300 px-2 py-1 rounded"
+                                    >
+                                        <option value="Uttar Pradesh">Uttar Pradesh</option>
+                                        <option value="Other">Other State</option>
+                                    </select>
+                                </div>
+                            </div>
+                            <div className="p-4 text-right">
+                                <div className="text-lg font-semibold">Food Cost: ${Number(totalCost).toFixed(2)}</div>
+                                <div className="text-lg font-semibold">GST: ${calculateGST()}</div>
+                                <div className="text-2xl font-bold">Total Payable Amount: ${Number(totalPayableAmount).toFixed(2)}</div>
+                                <button
+                                    className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
+                                    onClick={placeOrder}
+                                >
+                                    Place Order
+                                </button>
+                            </div>
+                        </div>
+                    ) : (
+                        <p className="text-center">Your cart is empty</p>
+                    )}
                 </div>
+                <Footer />
             </div>
-            {cartItems.length > 0 ? (
-                <div className="bg-white shadow-md rounded-lg overflow-hidden">
-                    {/* Cart items */}
-                    <table className="min-w-full">
-                        <thead>
-                            <tr className="text-center border-t">
-                                <th className="py-2 px-4">Product</th>
-                                <th className="py-2 px-4">Name</th>
-                                <th className="py-2 px-4">Price</th>
-                                <th className="py-2 px-4">Quantity</th>
-                                <th className="py-2 px-4">Total</th>
-                            </tr>
-                        </thead>
-                        <tbody>
-                            {cartItems.map((item) => (
-                                <tr key={item.id} className="text-center border-t">
-                                    {/* Product details */}
-                                    <td className="py-2 px-4">
-                                        <img
-                                            src={`http://localhost:5000/uploads/${item.photo}`}
-                                            alt={item.name}
-                                            className="w-16 h-16 object-cover rounded"
-                                        />
-                                    </td>
-                                    <td className="py-2 px-4">{item.name}</td>
-                                    <td className="py-2 px-4">${Number(item.price).toFixed(2)}</td>
-                                    {/* Quantity control */}
-                                    <td className="py-2 px-4 flex items-center justify-center space-x-2">
-                                        <button
-                                            className="bg-gray-300 px-2 rounded"
-                                            onClick={() => updateQuantity(item.id, item.quantity - 1)}
-                                        >
-                                            -
-                                        </button>
-                                        <span>{item.quantity}</span>
-                                        <button
-                                            className="bg-gray-300 px-2 rounded"
-                                            onClick={() => updateQuantity(item.id, item.quantity + 1)}
-                                        >
-                                            +
-                                        </button>
-                                    </td>
-                                    {/* Total cost for the item */}
-                                    <td className="py-2 px-4">${(Number(item.price) * item.quantity).toFixed(2)}</td>
-                                </tr>
-                            ))}
-                        </tbody>
-                    </table>
-                    {/* State selector */}
-                    <div className="p-4 flex justify-end">
-                        <div className="flex items-center">
-                            <span className="font-semibold mr-2">Select State:</span>
-                            <select
-                                value={selectedState}
-                                onChange={(e) => setSelectedState(e.target.value)}
-                                className="border border-gray-300 px-2 py-1 rounded"
-                            >
-                                <option value="Uttar Pradesh">Uttar Pradesh</option>
-                                <option value="Other">Other State</option>
-                            </select>
-                        </div>
-                    </div>
-                    {/* Bill Calculation */}
-                    <div className="p-4 bg-gray-100">
-                        <div className="flex justify-between mb-2">
-                            <span className="font-semibold">Food Cost:</span>
-                            <span>${totalCost.toFixed(2)}</span>
-                        </div>
-                        <div className="flex justify-between mb-2">
-                            <span className="font-semibold">GST ({selectedState === 'Uttar Pradesh' ? '12%' : '18%'}):</span>
-                            <span>${calculateGST()}</span>
-                        </div>
-                        <div className="flex justify-between">
-                            <span className="font-semibold">Total Payable Amount:</span>
-                            <span>${totalPayableAmount.toFixed(2)}</span>
-                        </div>
-                    </div>
-                </div>
-            ) : (
-                <div className="flex flex-col items-center justify-center mt-16">
-                    <h3 className="text-xl font-semibold text-gray-700 mb-2">Your cart is empty</h3>
-                    <p className="text-gray-500">You have no items in your cart. Add some products to see them here!</p>
-                </div>
-            )}
-            {/* Place order button */}
-            {cartItems.length > 0 && (
-                <div className="flex justify-end mt-4">
-                    <button onClick={placeOrder} className="bg-blue-500 text-white px-4 py-2 rounded">
-                        Place Order
-                    </button>
-                </div>
-            )}
-        </div>
-        <Footer/>
-        </div>
         </>
     );
 };

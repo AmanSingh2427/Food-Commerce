@@ -83,7 +83,7 @@ const UserRequests = () => {
                   </button>
                   <button
                     onClick={() => handleReject(user.id)}
-                    className="bg-red-500 text-white py-1 px-3 rounded hover:bg-red-600 transition-colors"
+                    className="bg-red-500 text-white py-1 px-3 rounded hover:bg-green-300 transition-colors"
                   >
                     Reject
                   </button>

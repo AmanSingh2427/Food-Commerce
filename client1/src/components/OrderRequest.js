@@ -4,7 +4,7 @@ import NavbarAdmin from './NavbarAdmin';
 import { useNavigate } from 'react-router-dom';
 
 const OrderRequest = () => {
-  const [orders, setOrders] = useState([]);
+  const [orders, setOrders] = useState({});
   const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
 
@@ -16,72 +16,78 @@ const OrderRequest = () => {
             Authorization: `Bearer ${localStorage.getItem('token')}`
           }
         });
-        setOrders(response.data);
+
+        // Group orders by order_id
+        const groupedOrders = response.data.reduce((acc, order) => {
+          if (!acc[order.order_id]) {
+            acc[order.order_id] = [];
+          }
+          acc[order.order_id].push(order);
+          return acc;
+        }, {});
+
+        setOrders(groupedOrders);
       } catch (err) {
         console.error('Error fetching orders:', err);
       }
     };
     fetchOrders();
-  }, [notification]); // Added notification as a dependency
+  }, [notification]);
 
-  const handleAcceptUserOrders = async (userId) => {
+  const handleAcceptUserOrders = async (orderId) => {
     try {
-      const response = await axios.put(`http://localhost:5000/users/${userId}/accept-orders`, null, {
+      const response = await axios.put(`http://localhost:5000/orders/${orderId}/accept`, null, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
       if (response.data.success) {
-        setOrders(orders.filter(order => order.user_id !== userId));
+        const newOrders = { ...orders };
+        delete newOrders[orderId];
+        setOrders(newOrders);
         setNotification({ type: 'success', message: 'Orders accepted successfully!', color: 'green' });
         setTimeout(() => {
           setNotification(null);
-        }, 2000); // Remove notification after 2 seconds
+        }, 2000);
       }
     } catch (err) {
       console.error('Error accepting orders:', err);
       setNotification({ type: 'error', message: 'Error accepting orders. Please try again.', color: 'red' });
-      navigate('/order-request');
       setTimeout(() => {
         setNotification(null);
-      }, 2000); // Remove notification after 2 seconds
+      }, 2000);
     }
   };
 
-  const handleCancelUserOrders = async (userId) => {
+  const handleCancelUserOrders = async (orderId) => {
     try {
-      const response = await axios.put(`http://localhost:5000/users/${userId}/cancel-orders`, null, {
+      const response = await axios.put(`http://localhost:5000/orders/${orderId}/cancel`, null, {
         headers: {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
       if (response.data.success) {
-        setOrders(orders.filter(order => order.user_id !== userId));
-        setNotification({ type: 'success', message: 'Orders canceled successfully!', color: 'red' });
+        const newOrders = { ...orders };
+        delete newOrders[orderId];
+        setOrders(newOrders);
+        setNotification({ type: 'success', message: 'Orders canceled successfully!', color: 'green' });
         setTimeout(() => {
           setNotification(null);
-        }, 2000); // Remove notification after 2 seconds
+        }, 2000);
       }
     } catch (err) {
       console.error('Error canceling orders:', err);
       setNotification({ type: 'error', message: 'Error canceling orders. Please try again.', color: 'red' });
       setTimeout(() => {
         setNotification(null);
-      }, 2000); // Remove notification after 2 seconds
+      }, 2000);
     }
   };
+  
 
   const clearNotification = () => {
     setNotification(null);
   };
-
-  const groupedOrders = orders.reduce((acc, order) => {
-    if (!acc[order.user_id]) {
-      acc[order.user_id] = [];
-    }
-    acc[order.user_id].push(order);
-    return acc;
-  }, {});
 
   return (
     <>
@@ -96,10 +102,10 @@ const OrderRequest = () => {
             </button>
           </div>
         )}
-        {Object.keys(groupedOrders).length > 0 ? (
-          Object.keys(groupedOrders).map(userId => (
-            <div key={userId} className="bg-white shadow-md rounded-lg overflow-hidden mb-6">
-              <h3 className="text-xl font-bold p-4">User ID: {userId}</h3>
+        {Object.keys(orders).length > 0 ? (
+          Object.keys(orders).map(orderId => (
+            <div key={orderId} className="bg-white shadow-md rounded-lg overflow-hidden mb-6">
+              <h3 className="text-xl font-bold p-4">Order ID: {orderId}</h3>
               <table className="min-w-full">
                 <thead>
                   <tr className="text-center border-t">
@@ -110,8 +116,8 @@ const OrderRequest = () => {
                   </tr>
                 </thead>
                 <tbody>
-                  {groupedOrders[userId].map(order => (
-                    <tr key={order.order_id} className="text-center border-t">
+                  {orders[orderId].map(order => (
+                    <tr key={order.id} className="text-center border-t">
                       <td className="py-2 px-4">
                         <img
                           src={`http://localhost:5000/uploads/${order.photo}`}
@@ -128,13 +134,13 @@ const OrderRequest = () => {
               </table>
               <div className="flex justify-end p-4">
                 <button
-                  onClick={() => handleAcceptUserOrders(userId)}
+                  onClick={() => handleAcceptUserOrders(orderId)}
                   className="bg-green-500 text-white py-2 px-4 rounded mr-2"
                 >
                   Accept All Orders
                 </button>
                 <button
-                  onClick={() => handleCancelUserOrders(userId)}
+                  onClick={() => handleCancelUserOrders(orderId)}
                   className="bg-red-500 text-white py-2 px-4 rounded"
                 >
                   Cancel All Orders
