@@ -708,6 +708,9 @@ app.post('/place-order/:userId', async (req, res) => {
     // Update delivered column to false for the user's cart items
     await pool.query('UPDATE aman.cart SET delivered = false WHERE user_id = $1', [userId]);
 
+     // Delete cart items after placing the order
+     await pool.query('DELETE FROM aman.cart WHERE user_id = $1', [userId]);
+
     // Commit transaction
     await pool.query('COMMIT');
 

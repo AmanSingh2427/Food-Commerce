@@ -3,7 +3,7 @@ import axios from 'axios';
 import { useNavigate, useLocation } from 'react-router-dom';
 import { ToastContainer, toast } from 'react-toastify';
 import 'react-toastify/dist/ReactToastify.css';
-import reactLogo from '../images/qr_code.svg';
+import QRCode from 'qrcode.react';
 
 const ConfirmOrder = () => {
     const [enteredAmount, setEnteredAmount] = useState('');
@@ -39,9 +39,17 @@ const ConfirmOrder = () => {
             <div className="bg-white p-8 rounded shadow-md w-full max-w-sm">
                 <h2 className="text-2xl font-bold mb-4">Confirm Your Order</h2>
                 <form onSubmit={handleSubmit}>
-                <div className="mb-4">
+                    <div className="mb-4">
                         <label className="block text-gray-700">Scan QR Code to Pay:</label>
-                        <img src={reactLogo} alt="QR Code" className="w-full h-auto"/>
+                        <QRCode
+                            value={`Total Payable Amount: ${totalPayableAmount}`}
+                            size={256}
+                            bgColor={"#ffffff"}
+                            fgColor={"#000000"}
+                            level={"Q"}
+                            includeMargin={false}
+                            className="w-full h-auto"
+                        />
                     </div>
                     <div className="mb-4">
                         <label className="block text-gray-700">Total Payable Amount: <span className="font-bold">${totalPayableAmount}</span></label>

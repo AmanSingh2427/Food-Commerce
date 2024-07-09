@@ -137,13 +137,13 @@ const OrderRequest = () => {
                   onClick={() => handleAcceptUserOrders(orderId)}
                   className="bg-green-500 text-white py-2 px-4 rounded mr-2"
                 >
-                  Accept All Orders
+                  Accept this Orders
                 </button>
                 <button
                   onClick={() => handleCancelUserOrders(orderId)}
                   className="bg-red-500 text-white py-2 px-4 rounded"
                 >
-                  Cancel All Orders
+                  Cancel this Orders
                 </button>
               </div>
             </div>
