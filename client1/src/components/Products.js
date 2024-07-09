@@ -77,7 +77,7 @@ const Products = () => {
         quantity: 1 // Assuming each product adds 1 quantity by default
       });
       console.log('Product added to cart:', response.data);
-      setCartCount(prevCount => prevCount + 1);
+      setCartCount(prevCount => prevCount + 1); // Update cart count
       setCartMessage(`${productName} has been added to your cart.`);
       setTimeout(() => {
         setCartMessage('');
@@ -86,6 +86,7 @@ const Products = () => {
       console.error('Error adding product to cart:', err);
     }
   };
+  
   
 
   const loadMoreProducts = () => {
@@ -99,6 +100,7 @@ const Products = () => {
   return (
     <>
       <Navbar setFilteredProducts={setFilteredProducts} cartCount={cartCount} setCartCount={setCartCount} />
+
       <Body />
       <div className="flex flex-col items-center bg-gray-100 py-8 min-h-screen">
         <div className="text-center mb-8">

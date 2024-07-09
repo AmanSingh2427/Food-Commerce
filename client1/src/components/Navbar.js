@@ -1,11 +1,12 @@
-import React, { useEffect, useState } from 'react';
-import { Link,useNavigate } from 'react-router-dom';
+import React, { useState, useEffect } from 'react';
+import { Link, useNavigate } from 'react-router-dom';
 import { FaShoppingCart } from 'react-icons/fa';
 import axios from 'axios';
 import reactLogo from '../images/image2.png';
 
-const Navbar = ({ setFilteredProducts }) => {
-  const [cartCount, setCartCount] = useState(0);
+const Navbar = ({ setFilteredProducts, cartCount, setCartCount }) => {
+  // Remove these declarations to avoid redeclaration error
+  // const [cartCount, setCartCount] = useState(0);
   const [categories, setCategories] = useState([]);
   const [products, setProducts] = useState([]);
   const [filteredItems, setFilteredItems] = useState([]);
@@ -48,7 +49,6 @@ const Navbar = ({ setFilteredProducts }) => {
     fetchCategories();
   }, []);
   
-
   useEffect(() => {
     const fetchProducts = async () => {
       try {
@@ -69,8 +69,6 @@ const Navbar = ({ setFilteredProducts }) => {
     localStorage.removeItem('userId');
     window.location.href = '/login';
   };
-
-  
 
   const handleCategoryClick = async (category) => {
     try {
@@ -100,7 +98,6 @@ const Navbar = ({ setFilteredProducts }) => {
       console.error('Error fetching all products:', error);
     }
   };
-  
 
   const handleSearchInputChange = (e) => {
     const searchValue = e.target.value.toLowerCase();
@@ -133,18 +130,17 @@ const Navbar = ({ setFilteredProducts }) => {
   const handleLogoClick = () => {
     navigate('/home');
   };
-  
 
   return (
     <nav className="bg-gray-800 p-4">
       <div className="flex justify-between items-center">
         <div className="flex space-x-8">
-        <img
-              src={reactLogo}
-              className="h-12 w-32 cursor-pointer "
-              alt="React logo "
-              onClick={handleLogoClick}
-            />
+          <img
+            src={reactLogo}
+            className="h-12 w-32 cursor-pointer "
+            alt="React logo "
+            onClick={handleLogoClick}
+          />
           <Link to="/home" className="text-white py-2">Home</Link>
           <Link to="/about" className="text-white py-2">About</Link>
           <Link to="/contact" className="text-white py-2">Contact</Link>
