@@ -1,6 +1,7 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import jsPDF from 'jspdf';
+import QRCode from 'qrcode';
 import 'tailwindcss/tailwind.css'; // Ensure Tailwind CSS is correctly imported
 
 const OrderHistory = () => {
@@ -73,10 +74,23 @@ const OrderHistory = () => {
     return allOrders;
   };
 
+  const generateQRCode = async (text) => {
+    try {
+      const qrCodeDataURL = await QRCode.toDataURL(text,{
+        // errorCorrectionLevel: 'H',
+        // version: 40,
+        width: 70,
+        height: 10
+       });
+      return qrCodeDataURL;
+    } catch (error) {
+      console.error('Error generating QR code:', error);
+    }
+  };
+
   const downloadPDF = async () => {
     try {
       const allOrders = await fetchAllOrders();
-
       const doc = new jsPDF('p', 'pt', 'a4');
       const rowsPerPage = 30; // Number of rows per page
       const pageWidth = doc.internal.pageSize.getWidth();
@@ -112,6 +126,9 @@ const OrderHistory = () => {
         });
       };
 
+      const qrCodeText = 'a1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXya1B2c3D4e5F6g7H8i9J0kLmNoPqRsTuVwXy ';
+      const qrCodeDataURL = await generateQRCode(qrCodeText);
+
       for (let i = 0; i < allOrders.length; i += rowsPerPage) {
         const chunk = allOrders.slice(i, i + rowsPerPage);
         if (rowCount > 0) {
@@ -120,6 +137,10 @@ const OrderHistory = () => {
         generateTableHeaders();
         generateTableContent(chunk, margin + 20);
         rowCount += chunk.length;
+
+        if (qrCodeDataURL) {
+          doc.addImage(qrCodeDataURL, 'PNG', margin, doc.internal.pageSize.getHeight() - 110, 100, 70);
+        }
       }
 
       doc.save('order-history.pdf');
@@ -202,7 +223,9 @@ const OrderHistory = () => {
               ))
             ) : (
               <tr>
-                <td className="py-2 px-4 border" colSpan="8">No orders found.</td>
+                <td colSpan="8" className="py-2 px-4 border text-center">
+                  No orders found.
+                </td>
               </tr>
             )}
           </tbody>
@@ -212,14 +235,14 @@ const OrderHistory = () => {
         <button
           onClick={handlePreviousPage}
           disabled={currentPage === 1}
-          className={`px-4 py-2 rounded shadow-lg ${currentPage === 1 ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+          className="px-4 py-2 bg-blue-500 text-white rounded shadow-lg hover:bg-blue-600 focus:outline-none"
         >
           Previous
         </button>
         <button
           onClick={handleNextPage}
           disabled={currentPage === totalPages}
-          className={`px-4 py-2 rounded shadow-lg ${currentPage === totalPages ? 'bg-gray-300 cursor-not-allowed' : 'bg-blue-500 text-white hover:bg-blue-600'}`}
+          className="px-4 py-2 bg-blue-500 text-white rounded shadow-lg hover:bg-blue-600 focus:outline-none"
         >
           Next
         </button>

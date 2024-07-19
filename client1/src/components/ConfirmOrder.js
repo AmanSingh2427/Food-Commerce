@@ -18,7 +18,7 @@ const ConfirmOrder = () => {
     const handleSubmit = async (e) => {
         e.preventDefault();
 
-        if (Number(enteredAmount) === totalPayableAmount) {
+        if (Number(enteredAmount).toFixed(2) === totalPayableAmount.toFixed(2)) {
             try {
                 await axios.post(`http://localhost:5000/place-order/${userId}`);
                 toast.success('Your order has been placed successfully!');
@@ -42,7 +42,7 @@ const ConfirmOrder = () => {
                     <div className="mb-4">
                         <label className="block text-gray-700">Scan QR Code to Pay:</label>
                         <QRCode
-                            value={`Total Payable Amount: ${totalPayableAmount}`}
+                            value={`Total Payable Amount: ${totalPayableAmount.toFixed(2)}`}
                             size={256}
                             bgColor={"#ffffff"}
                             fgColor={"#000000"}
@@ -52,7 +52,7 @@ const ConfirmOrder = () => {
                         />
                     </div>
                     <div className="mb-4">
-                        <label className="block text-gray-700">Total Payable Amount: <span className="font-bold">${totalPayableAmount}</span></label>
+                        <label className="block text-gray-700">Total Payable Amount: <span className="font-bold">${totalPayableAmount.toFixed(2)}</span></label>
                     </div>
                     <div className="mb-4">
                         <label className="block text-gray-700">Enter Total Amount:</label>

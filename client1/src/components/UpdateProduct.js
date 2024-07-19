@@ -3,6 +3,8 @@ import axios from 'axios';
 import { useNavigate, useLocation, useParams } from 'react-router-dom';
 import Dashboard from './Dashboard';
 import NavbarAdmin from './NavbarAdmin';
+import { toast, ToastContainer } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const UpdateProduct = () => {
   const { productId } = useParams();
@@ -14,10 +16,10 @@ const UpdateProduct = () => {
     price: '',
     description: '',
     category: '',
-    photo: ''
+    photo: '',
+    discount: ''
   });
   const [image, setImage] = useState(null);
-  const [notification, setNotification] = useState({ message: '', type: '' });
 
   useEffect(() => {
     if (!location.state?.product) {
@@ -51,9 +53,8 @@ const UpdateProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!product.name || !product.price || !product.description || !product.category) {
-      setNotification({ message: 'Please fill in all required fields', type: 'error' });
-      setTimeout(() => setNotification({ message: '', type: '' }), 2000);
+    if (!product.name || !product.price || !product.description || !product.category || !product.discount) {
+      toast.error('Please fill in all required fields');
       return;
     }
 
@@ -62,6 +63,7 @@ const UpdateProduct = () => {
     formData.append('price', product.price);
     formData.append('description', product.description);
     formData.append('category', product.category);
+    formData.append('discount', product.discount);
     if (image) {
       formData.append('photo', image);
     }
@@ -73,15 +75,13 @@ const UpdateProduct = () => {
           'Content-Type': 'multipart/form-data'
         }
       });
-      setNotification({ message: `Product ${product.name} updated successfully!`, type: 'success' });
+      toast.success(`Product ${product.name} updated successfully!`);
       setTimeout(() => {
-        setNotification({ message: '', type: '' });
         navigate('/products');
       }, 2000);
     } catch (err) {
       console.error('Error updating product:', err);
-      setNotification({ message: 'Error updating product. Please try again.', type: 'error' });
-      setTimeout(() => setNotification({ message: '', type: '' }), 2000);
+      toast.error('Error updating product. Please try again.');
     }
   };
 
@@ -91,15 +91,6 @@ const UpdateProduct = () => {
       <NavbarAdmin />
       <div className="container mx-auto mt-8 p-4">
         <h2 className="text-2xl font-bold mb-6 text-center">Update Product</h2>
-        {notification.message && (
-          <div
-            className={`mb-4 text-center text-white p-2 rounded ${
-              notification.type === 'success' ? 'bg-green-500' : 'bg-red-500'
-            } max-w-2xl mx-auto`}
-          >
-            {notification.message}
-          </div>
-        )}
         <form onSubmit={handleSubmit} className="max-w-2xl mx-auto bg-white p-8 rounded shadow-md">
           <div className="mb-4">
             <label htmlFor="name" className="block text-sm font-medium text-gray-700">Name:</label>
@@ -158,6 +149,18 @@ const UpdateProduct = () => {
             </select>
           </div>
           <div className="mb-4">
+            <label htmlFor="discount" className="block text-sm font-medium text-gray-700">Discount (%):</label>
+            <input
+              type="number"
+              id="discount"
+              name="discount"
+              value={product.discount}
+              onChange={handleChange}
+              className="border border-gray-300 rounded-md p-2 w-full"
+              placeholder="Enter discount percentage"
+            />
+          </div>
+          <div className="mb-4">
             <label htmlFor="photo" className="block text-sm font-medium text-gray-700">Photo:</label>
             <input
               type="file"
@@ -175,6 +178,7 @@ const UpdateProduct = () => {
           </button>
         </form>
       </div>
+      <ToastContainer />
     </>
   );
 };

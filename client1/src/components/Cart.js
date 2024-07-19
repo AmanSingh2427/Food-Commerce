@@ -6,6 +6,7 @@ import Footer from '../Footer';
 
 const Cart = () => {
     const [cartItems, setCartItems] = useState([]);
+    const [totalBeforeDiscount, setTotalBeforeDiscount] = useState(0);
     const [totalCost, setTotalCost] = useState(0);
     const [selectedState, setSelectedState] = useState('Uttar Pradesh');
     const [totalPayableAmount, setTotalPayableAmount] = useState(0);
@@ -61,8 +62,13 @@ const Cart = () => {
     }, [totalCost, selectedState]);
 
     const calculateFoodCost = (items) => {
-        const total = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
-        setTotalCost(total);
+        const totalBefore = items.reduce((acc, item) => acc + item.price * item.quantity, 0);
+        const totalAfterDiscount = items.reduce((acc, item) => {
+            const discountedPrice = item.price * (1 - item.discount / 100);
+            return acc + discountedPrice * item.quantity;
+        }, 0);
+        setTotalBeforeDiscount(totalBefore);
+        setTotalCost(totalAfterDiscount);
     };
 
     const calculateGST = () => {
@@ -117,8 +123,10 @@ const Cart = () => {
                                         <th className="py-2 px-4">Product</th>
                                         <th className="py-2 px-4">Name</th>
                                         <th className="py-2 px-4">Price</th>
+                                        <th className="py-2 px-4">Discount</th>
                                         <th className="py-2 px-4">Quantity</th>
                                         <th className="py-2 px-4">Total</th>
+                                        {/* <th className="py-2 px-4">Total After Discount</th> */}
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -132,7 +140,8 @@ const Cart = () => {
                                                 />
                                             </td>
                                             <td className="py-2 px-4">{item.name}</td>
-                                            <td className="py-2 px-4">${Number(item.price).toFixed(2)}</td>
+                                            <td className="py-2 px-4">₹{Number(item.price).toFixed(2)}</td>
+                                            <td className="py-2 px-4">{item.discount}%</td>
                                             <td className="py-2 px-4 flex items-center justify-center space-x-2">
                                                 <button
                                                     className="bg-gray-300 px-2 rounded"
@@ -148,7 +157,12 @@ const Cart = () => {
                                                     +
                                                 </button>
                                             </td>
-                                            <td className="py-2 px-4">${(Number(item.price) * item.quantity).toFixed(2)}</td>
+                                            <td className="py-2 px-4">
+                                            ₹{Number(item.price * item.quantity).toFixed(2)}
+                                            </td>
+                                            {/* <td className="py-2 px-4">
+                                                ${((item.price * (1 - item.discount / 100)) * item.quantity).toFixed(2)}
+                                            </td> */}
                                         </tr>
                                     ))}
                                 </tbody>
@@ -167,9 +181,10 @@ const Cart = () => {
                                 </div>
                             </div>
                             <div className="p-4 text-right">
-                                <div className="text-lg font-semibold">Food Cost: ${Number(totalCost).toFixed(2)}</div>
-                                <div className="text-lg font-semibold">GST: ${calculateGST()}</div>
-                                <div className="text-2xl font-bold">Total Payable Amount: ${Number(totalPayableAmount).toFixed(2)}</div>
+                                <div className="text-lg font-semibold">Total Before Discount: ₹{Number(totalBeforeDiscount).toFixed(2)}</div>
+                                <div className="text-lg font-semibold">Food Cost After Discount: ₹{Number(totalCost).toFixed(2)}</div>
+                                <div className="text-lg font-semibold">GST: ₹{calculateGST()}</div>
+                                <div className="text-2xl font-bold">Total Payable Amount: ₹{Number(totalPayableAmount).toFixed(2)}</div>
                                 <button
                                     className="bg-blue-500 text-white px-4 py-2 rounded mt-4"
                                     onClick={placeOrder}

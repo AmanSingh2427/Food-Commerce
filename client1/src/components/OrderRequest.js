@@ -2,10 +2,11 @@ import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import NavbarAdmin from './NavbarAdmin';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const OrderRequest = () => {
   const [orders, setOrders] = useState({});
-  const [notification, setNotification] = useState(null);
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -32,7 +33,7 @@ const OrderRequest = () => {
       }
     };
     fetchOrders();
-  }, [notification]);
+  }, []);
 
   const handleAcceptUserOrders = async (orderId) => {
     try {
@@ -45,17 +46,11 @@ const OrderRequest = () => {
         const newOrders = { ...orders };
         delete newOrders[orderId];
         setOrders(newOrders);
-        setNotification({ type: 'success', message: 'Orders accepted successfully!', color: 'green' });
-        setTimeout(() => {
-          setNotification(null);
-        }, 2000);
+        toast.success('Orders accepted successfully!');
       }
     } catch (err) {
       console.error('Error accepting orders:', err);
-      setNotification({ type: 'error', message: 'Error accepting orders. Please try again.', color: 'red' });
-      setTimeout(() => {
-        setNotification(null);
-      }, 2000);
+      toast.error('Error accepting orders. Please try again.');
     }
   };
 
@@ -70,38 +65,20 @@ const OrderRequest = () => {
         const newOrders = { ...orders };
         delete newOrders[orderId];
         setOrders(newOrders);
-        setNotification({ type: 'success', message: 'Orders canceled successfully!', color: 'green' });
-        setTimeout(() => {
-          setNotification(null);
-        }, 2000);
+        toast.success('Orders canceled successfully!');
       }
     } catch (err) {
       console.error('Error canceling orders:', err);
-      setNotification({ type: 'error', message: 'Error canceling orders. Please try again.', color: 'red' });
-      setTimeout(() => {
-        setNotification(null);
-      }, 2000);
+      toast.error('Error canceling orders. Please try again.');
     }
-  };
-  
-
-  const clearNotification = () => {
-    setNotification(null);
   };
 
   return (
     <>
       <NavbarAdmin />
+      <ToastContainer />
       <div className="container mx-auto mt-8">
         <h2 className="text-2xl font-bold mb-4">Order Requests</h2>
-        {notification && (
-          <div className={`bg-${notification.color}-500 text-white p-4 mb-4`}>
-            {notification.message}
-            <button onClick={clearNotification} className="float-right">
-              &#x2715;
-            </button>
-          </div>
-        )}
         {Object.keys(orders).length > 0 ? (
           Object.keys(orders).map(orderId => (
             <div key={orderId} className="bg-white shadow-md rounded-lg overflow-hidden mb-6">

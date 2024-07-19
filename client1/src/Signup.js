@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const Signup = () => {
   const [username, setUsername] = useState('');
@@ -10,8 +12,6 @@ const Signup = () => {
   const [role, setRole] = useState('user'); // Added state for role
   const [showPassword, setShowPassword] = useState(false);
   const [image, setImage] = useState(null);
-  const [notification, setNotification] = useState(null); // State for notification
-  const [notificationType, setNotificationType] = useState(''); // State for notification type
   const navigate = useNavigate();
 
   const handleSubmit = async (e) => {
@@ -27,15 +27,13 @@ const Signup = () => {
     try {
       const response = await axios.post('http://localhost:5000/signup', formData);
       console.log(response.data);
-      setNotification('Signup successful! Please check your email for further instructions.');
-      setNotificationType('success');
+      toast.success('Signup successful! Please check your email for further instructions.');
       setTimeout(() => {
         navigate('/login');
-      }, 2000); // Redirect after 3 seconds
+      }, 2000); // Redirect after 2 seconds
     } catch (error) {
       console.error('Error:', error.response ? error.response.data.message : error.message);
-      setNotification('Signup failed. Please try again.');
-      setNotificationType('error');
+      toast.error('Signup failed. Please try again.');
     }
   };
 
@@ -43,11 +41,6 @@ const Signup = () => {
     <div className="flex justify-center items-center h-screen bg-gray-100">
       <div className="bg-white p-8 rounded shadow-md w-full max-w-md text-center">
         <h2 className="text-2xl font-bold mb-6">Signup</h2>
-        {notification && (
-          <div className={`p-2 mb-4 rounded ${notificationType === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-            {notification}
-          </div>
-        )}
         <form onSubmit={handleSubmit}>
           <input
             type="text"
@@ -132,6 +125,7 @@ const Signup = () => {
           </button>
         </form>
       </div>
+      <ToastContainer />
     </div>
   );
 };

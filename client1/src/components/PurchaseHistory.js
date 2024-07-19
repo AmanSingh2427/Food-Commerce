@@ -1,6 +1,8 @@
 import React, { useEffect, useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import StarRating from './StarRating';
 import Navbar from './Navbar';
 import Footer from '../Footer';
@@ -11,7 +13,6 @@ const PurchaseHistory = () => {
   const [ratings, setRatings] = useState({});
   const [currentPage, setCurrentPage] = useState(1);
   const [totalPages, setTotalPages] = useState(1);
-  const [notification, setNotification] = useState('');
   const navigate = useNavigate();
   const itemsPerPage = 10;
 
@@ -29,6 +30,7 @@ const PurchaseHistory = () => {
       } catch (error) {
         console.error('Error fetching order history:', error);
         setLoading(false);
+        toast.error('Error fetching order history. Please try again.');
       }
     };
 
@@ -50,16 +52,10 @@ const PurchaseHistory = () => {
         orderId,
         rating: ratings[orderId],
       });
-      setNotification(`Rating submitted successfully for order ID: ${orderId}`);
-      setTimeout(() => {
-        setNotification('');
-      }, 2000);
+      toast.success(`Rating submitted successfully for order ID: ${orderId}`);
     } catch (error) {
       console.error('Error submitting rating:', error);
-      setNotification('Failed to submit rating');
-      setTimeout(() => {
-        setNotification('');
-      }, 2000);
+      toast.error('Failed to submit rating. Please try again.');
     }
   };
 
@@ -73,11 +69,6 @@ const PurchaseHistory = () => {
       <div className="flex flex-col min-h-screen">
         <div className="container mx-auto mt-8 flex-grow">
           <h2 className="text-2xl font-bold mb-4">Purchase History</h2>
-          {notification && (
-            <div className="mb-4 text-center text-white bg-green-500 p-2 rounded">
-              {notification}
-            </div>
-          )}
           {loading ? (
             <p>Loading...</p>
           ) : orderHistory.length === 0 ? (
@@ -151,6 +142,7 @@ const PurchaseHistory = () => {
         </div>
         <Footer />
       </div>
+      <ToastContainer position="bottom-right" autoClose={3000} hideProgressBar={false} />
     </>
   );
 };

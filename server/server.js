@@ -160,6 +160,34 @@ app.get('/pending-registrations', checkAdminRole, async (req, res) => {
   }
 });
 
+// Contact form route
+app.post('/api/contact', async (req, res) => {
+  const { name, email, food, message } = req.body;
+
+  try {
+    // Insert contact form data into the database
+    const query = 'INSERT INTO aman.contacts (name, email, food, message) VALUES ($1, $2, $3, $4)';
+    const values = [name, email, food, message];
+    await pool.query(query, values);
+
+    // Send an email to the admin
+    await sendEmail(
+      'sardarkhan2428@gmail.com', // Admin email address
+      'New Contact Form Submission',
+      `<h2>Contact Form Submission</h2>
+       <p><strong>Name:</strong> ${name}</p>
+       <p><strong>Email:</strong> ${email}</p>
+       <p><strong>Food:</strong> ${food}</p>
+       <p><strong>Message:</strong> ${message}</p>`
+    );
+
+    res.status(200).json({ message: 'Contact information saved successfully!' });
+  } catch (error) {
+    console.error('Error saving contact information:', error);
+    res.status(500).json({ message: 'Failed to save contact information' });
+  }
+});
+
 // Approve user registration by Admin
 app.post('/approve-user', checkAdminRole, async (req, res) => {
   const { userId } = req.body;
@@ -184,6 +212,7 @@ app.post('/approve-user', checkAdminRole, async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
 
 
 // Admin reject the user request
@@ -404,18 +433,18 @@ const uploads = multer({ storage: storage });
 
 //create new product by admin
 app.post('/create-product', uploads.single('photo'), async (req, res) => {
-  const { name, price, description, category } = req.body;
+  const { name, price, description, category, discount } = req.body; // Added discount
   const photo = req.file ? req.file.filename : null;
 
   // Input validation
-  if (!name || !price || !description || !category) {
+  if (!name || !price || !description || !category || !discount) { // Added discount validation
     return res.status(400).send('Please provide all required fields');
   }
 
   try {
     const newProduct = await pool.query(
-      'INSERT INTO aman.products (name, price, photo, description, category) VALUES ($1, $2, $3, $4, $5) RETURNING *',
-      [name, price, photo, description, category]
+      'INSERT INTO aman.products (name, price, photo, description, category, discount) VALUES ($1, $2, $3, $4, $5, $6) RETURNING *',
+      [name, price, photo, description, category, discount] // Added discount to query
     );
     res.json(newProduct.rows[0]);
   } catch (err) {
@@ -424,7 +453,7 @@ app.post('/create-product', uploads.single('photo'), async (req, res) => {
   }
 });
 
-// fetch all products on All Products page
+// // fetch all products on All Products page
 app.get('/products', async (req, res) => {
   try {
     const result = await pool.query('SELECT id, name, price, description, photo, category FROM aman.products ORDER BY id ASC');
@@ -437,15 +466,16 @@ app.get('/products', async (req, res) => {
 
 // fetch product at updated page
 // server.js or routes/products.js
-app.get('/products', async (req, res) => {
+app.get('/productsuser', async (req, res) => {
   try {
-    const result = await pool.query('SELECT id, name, price, description, photo, category FROM aman.products');
+    const result = await pool.query('SELECT id, name, price, description, photo, category, discount FROM aman.products');
     res.json(result.rows);
   } catch (err) {
     console.error('Error fetching products:', err);
     res.status(500).send('Server error');
   }
 });
+
 
 
 // Fetch all categories
@@ -511,24 +541,22 @@ app.get('/products/:id', async (req, res) => {
 app.put('/products/:id', (req, res) => {
   upload(req, res, async (err) => {
     const { id } = req.params;
-    console.log(id);
-    const { name, price, description, category } = req.body;
+    const { name, price, description, category, discount } = req.body; // Include discount in destructuring
     let photo = req.file ? req.file.path : null;
-    console.log(name, price, description, category, photo);
 
-    if (!name || !price || !description || !category) {
-      return res.status(400).send({ message: 'Name, price, description, and category are required' });
+    if (!name || !price || !description || !category || !discount) {
+      return res.status(400).send({ message: 'Name, price, description, category, and discount are required' });
     }
 
     try {
-      let updateQuery = 'UPDATE aman.products SET name = $1, price = $2, description = $3, category = $4';
-      let queryParams = [name, price, description, category];
+      let updateQuery = 'UPDATE aman.products SET name = $1, price = $2, description = $3, category = $4, discount = $5';
+      let queryParams = [name, price, description, category, discount]; // Include discount in queryParams
 
       if (photo) {
-        updateQuery += ', photo = $5 WHERE id = $6';
+        updateQuery += ', photo = $6 WHERE id = $7';
         queryParams.push(photo, id);
       } else {
-        updateQuery += ' WHERE id = $5';
+        updateQuery += ' WHERE id = $6';
         queryParams.push(id);
       }
 
@@ -540,8 +568,8 @@ app.put('/products/:id', (req, res) => {
 
       res.send({ message: 'Product updated successfully' });
     } catch (err) {
-      console.error('Database update error:', err.message);
-      res.status(500).send('Server error');
+      console.error('Error updating product:', err);
+      res.status(500).send({ message: 'Error updating product' });
     }
   });
 });
@@ -607,7 +635,7 @@ app.get('/cart/:userId', async (req, res) => {
 
   try {
     const cartItems = await pool.query(
-      `SELECT aman.cart.id, aman.products.name, aman.products.price, aman.products.photo, aman.cart.quantity, aman.cart.added_at 
+      `SELECT aman.cart.id, aman.products.name, aman.products.price, aman.products.photo, aman.products.discount, aman.cart.quantity, aman.cart.added_at 
       FROM aman.cart 
       JOIN aman.products ON aman.cart.product_id = aman.products.id 
       WHERE aman.cart.user_id = $1`,
@@ -619,6 +647,7 @@ app.get('/cart/:userId', async (req, res) => {
     res.status(500).send('Server error');
   }
 });
+
 
 // Endpoint to update the quantity of a cart item
 app.put('/cart/:userId/:itemId', async (req, res) => {

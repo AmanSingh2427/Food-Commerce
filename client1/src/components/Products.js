@@ -19,7 +19,7 @@ const Products = () => {
   useEffect(() => {
     const fetchProducts = async () => {
       try {
-        const response = await axios.get('http://localhost:5000/products');
+        const response = await axios.get('http://localhost:5000/productsuser');
         setProducts(response.data);
         setFilteredProducts(response.data.slice(0, visibleProducts));
         fetchAverageRatings(response.data);
@@ -87,8 +87,6 @@ const Products = () => {
     }
   };
   
-  
-
   const loadMoreProducts = () => {
     setVisibleProducts(prevVisible => prevVisible + 9);
   };
@@ -117,7 +115,12 @@ const Products = () => {
               />
               <h3 className="text-lg font-semibold mb-2">{product.name}</h3>
               <p className="text-gray-600 mb-2">{product.description}</p>
-              <span className="text-gray-900 font-bold mb-2">${product.price}</span>
+              <div className="flex justify-between items-center mb-2">
+                <span className="text-gray-900 font-bold">₹{product.price}</span>
+                {product.discount && (
+                  <span className="text-red-500 font-bold">Discount: {product.discount}%</span>
+                )}
+              </div>
               {isLoadingRatings ? (
                 <p>Loading...</p>
               ) : (

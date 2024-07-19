@@ -2,13 +2,14 @@ import React, { useState, useEffect } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import NavbarAdmin from './NavbarAdmin';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const UpdateProfile = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [image, setImage] = useState(null);
-  const [showNotification, setShowNotification] = useState(false); // State for notification visibility
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -54,26 +55,20 @@ const UpdateProfile = () => {
       if (response.data.image) {
         localStorage.setItem('userImage', response.data.image);
       }
-      setShowNotification(true); // Show notification on success
-      setTimeout(() => {
-        setShowNotification(false);
-        navigate('/adminhome'); // Navigate to admin home after closing notification
-      }, 3000); // Hide notification after 3 seconds
+      toast.success('Profile Updated Successfully!', {
+        onClose: () => navigate('/adminhome')
+      });
     } catch (error) {
-      console.error(error.response.data.message);
+      toast.error(`Error updating profile: ${error.response.data.message}`);
     }
   };
 
   return (
     <>
       <NavbarAdmin/>
+      <ToastContainer />
       <div className="flex justify-center items-center h-screen bg-gray-100">
-        <div className="bg-white p-8 rounded shadow-md w-full max-w-md text-center relative">
-          {showNotification && (
-            <div className="absolute top-0 left-0 right-0 bg-green-500 text-white p-2 rounded-t">
-              Profile Updated Successfully!
-            </div>
-          )}
+        <div className="bg-white p-8 rounded shadow-md w-full max-w-md text-center">
           <h2 className="text-2xl font-bold mb-6">Update Profile</h2>
           <form onSubmit={handleSubmit}>
             <input 

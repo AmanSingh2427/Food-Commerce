@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify'; // Import Toastify
+import 'react-toastify/dist/ReactToastify.css'; // Import Toastify CSS
 
 const LoginForm = () => {
   const [username, setUsername] = useState('');
@@ -9,7 +11,6 @@ const LoginForm = () => {
   const [otp, setOtp] = useState('');
   const [isForgotPassword, setIsForgotPassword] = useState(false);
   const [isOtpSent, setIsOtpSent] = useState(false);
-  const [notification, setNotification] = useState({ message: '', type: '' });
   const navigate = useNavigate();
 
   const handleLoginSubmit = async (e) => {
@@ -23,9 +24,8 @@ const LoginForm = () => {
       localStorage.setItem('role', response.data.role);
       localStorage.setItem('email', response.data.email);
 
-      setNotification({ message: 'Login successful!', type: 'success' });
+      toast.success('Login successful!');
       setTimeout(() => {
-        setNotification({ message: '', type: '' });
         if (response.data.role === 'admin') {
           navigate('/adminhome');
         } else {
@@ -33,8 +33,7 @@ const LoginForm = () => {
         }
       }, 2000);
     } catch (error) {
-      setNotification({ message: error.response.data.message, type: 'error' });
-      setTimeout(() => setNotification({ message: '', type: '' }), 2000);
+      toast.error(error.response.data.message);
     }
   };
 
@@ -43,11 +42,9 @@ const LoginForm = () => {
     try {
       const response = await axios.post('http://localhost:5000/forgot-password', { email });
       setIsOtpSent(true);
-      setNotification({ message: response.data.message, type: 'success' });
-      setTimeout(() => setNotification({ message: '', type: '' }), 2000);
+      toast.success(response.data.message);
     } catch (error) {
-      setNotification({ message: error.response.data.message, type: 'error' });
-      setTimeout(() => setNotification({ message: '', type: '' }), 2000);
+      toast.error(error.response.data.message);
     }
   };
 
@@ -55,25 +52,16 @@ const LoginForm = () => {
     e.preventDefault();
     try {
       const response = await axios.post('http://localhost:5000/verify-otp', { email, otp });
-      setNotification({ message: response.data.message, type: 'success' });
-      setTimeout(() => {
-        setNotification({ message: '', type: '' });
-        navigate('/reset-password');
-      }, 2000);
+      toast.success(response.data.message);
+      setTimeout(() => navigate('/reset-password'), 2000);
     } catch (error) {
-      setNotification({ message: error.response.data.message, type: 'error' });
-      setTimeout(() => setNotification({ message: '', type: '' }), 2000);
+      toast.error(error.response.data.message);
     }
   };
 
   return (
     <div className="relative flex justify-center items-center h-screen bg-gray-100">
       <div className="w-full max-w-md">
-        {notification.message && (
-          <div className={`p-2 mb-4 text-center ${notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-            {notification.message}
-          </div>
-        )}
         <div className="bg-white p-8 rounded shadow-md text-center">
           {!isForgotPassword ? (
             <>
@@ -165,6 +153,7 @@ const LoginForm = () => {
           )}
         </div>
       </div>
+      <ToastContainer /> {/* Add ToastContainer for displaying notifications */}
     </div>
   );
 };

@@ -84,7 +84,7 @@ const ProductProcessing = () => {
                                                     />
                                                 </td>
                                                 <td className="py-2 px-4">{item.name}</td>
-                                                <td className="py-2 px-4">${Number(item.price).toFixed(2)}</td>
+                                                <td className="py-2 px-4">₹{Number(item.price).toFixed(2)}</td>
                                                 <td className="py-2 px-4">{item.quantity}</td>
                                             </tr>
                                         ))}

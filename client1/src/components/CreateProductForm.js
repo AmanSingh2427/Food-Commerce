@@ -1,6 +1,8 @@
 import React, { useState } from 'react';
 import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 import Dashboard from './Dashboard';
 import NavbarAdmin from './NavbarAdmin';
 
@@ -10,9 +12,9 @@ const CreateProductForm = () => {
     price: '',
     photo: '',
     description: '',
-    category: ''
+    category: '',
+    discount: '' // Added discount field
   });
-  const [notification, setNotification] = useState({ message: '', type: '' });
   const navigate = useNavigate();
 
   const handleInputChange = (e) => {
@@ -38,6 +40,7 @@ const CreateProductForm = () => {
     formData.append('photo', newProduct.photo);
     formData.append('description', newProduct.description);
     formData.append('category', newProduct.category);
+    formData.append('discount', newProduct.discount); // Append discount to formData
 
     try {
       await axios.post('http://localhost:5000/create-product', formData, {
@@ -46,16 +49,12 @@ const CreateProductForm = () => {
           Authorization: `Bearer ${localStorage.getItem('token')}`
         }
       });
-      setNotification({ message: 'Product created successfully!', type: 'success' });
+      toast.success('Product created successfully!');
       setTimeout(() => {
-        setNotification({ message: '', type: '' });
         navigate('/adminhome'); // Navigate to admin home page on success
       }, 2000);
     } catch (err) {
-      setNotification({ message: 'Error creating product', type: 'error' });
-      setTimeout(() => {
-        setNotification({ message: '', type: '' });
-      }, 2000);
+      toast.error('Error creating product');
     }
   };
 
@@ -65,11 +64,6 @@ const CreateProductForm = () => {
       <NavbarAdmin />
       <div className="flex justify-center items-center min-h-screen bg-gray-100">
         <div className="w-full max-w-lg">
-          {notification.message && (
-            <div className={`p-2 mb-4 text-center ${notification.type === 'success' ? 'bg-green-500 text-white' : 'bg-red-500 text-white'}`}>
-              {notification.message}
-            </div>
-          )}
           <form onSubmit={handleSubmit} className="bg-white p-8 rounded shadow-md">
             <h2 className="block text-gray-700 text-lg font-bold mb-6 text-center">Create New Product</h2>
             <div className="mb-4">
@@ -145,6 +139,19 @@ const CreateProductForm = () => {
                 <option value="Healthy Options">Healthy Options</option>
               </select>
             </div>
+            <div className="mb-4">
+              <label className="block text-gray-700 text-sm font-bold mb-2" htmlFor="discount">
+                Discount (%)
+              </label>
+              <input
+                type="number"
+                name="discount"
+                value={newProduct.discount}
+                onChange={handleInputChange}
+                className="w-full px-3 py-2 border rounded"
+                required
+              />
+            </div>
             <button
               type="submit"
               className="w-full bg-green-500 text-white py-2 rounded hover:bg-green-600 transition-colors"
@@ -154,6 +161,7 @@ const CreateProductForm = () => {
           </form>
         </div>
       </div>
+      <ToastContainer />
     </>
   );
 };
