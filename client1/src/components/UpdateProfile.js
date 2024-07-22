@@ -10,6 +10,7 @@ const UpdateProfile = () => {
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [image, setImage] = useState(null);
+  const [validationErrors, setValidationErrors] = useState({});
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,6 +36,19 @@ const UpdateProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    let errors = {};
+    if (!fullName) errors.fullName = 'Full Name is required';
+    if (!email) errors.email = 'Email is required';
+    if (!username) errors.username = 'Username is required';
+
+    setValidationErrors(errors);
+
+    if (Object.keys(errors).length > 0) {
+      Object.values(errors).forEach((error) => toast.error(error));
+      return;
+    }
+
     const formData = new FormData();
     formData.append('username', username);
     formData.append('email', email);
@@ -76,25 +90,25 @@ const UpdateProfile = () => {
               placeholder="Full Name" 
               value={fullName} 
               onChange={(e) => setFullName(e.target.value)} 
-              required 
               className="mb-4 p-2 w-full border rounded"
             />
+            {validationErrors.fullName && <p className="text-red-500">{validationErrors.fullName}</p>}
             <input 
               type="email" 
               placeholder="Email" 
               value={email} 
               onChange={(e) => setEmail(e.target.value)} 
-              required 
               className="mb-4 p-2 w-full border rounded"
             />
+            {validationErrors.email && <p className="text-red-500">{validationErrors.email}</p>}
             <input 
               type="text" 
               placeholder="Username" 
               value={username} 
               onChange={(e) => setUsername(e.target.value)} 
-              required 
               className="mb-4 p-2 w-full border rounded"
             />
+            {validationErrors.username && <p className="text-red-500">{validationErrors.username}</p>}
             <input
               type="file"
               onChange={(e) => setImage(e.target.files[0])}

@@ -53,8 +53,26 @@ const UpdateProduct = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
-    if (!product.name || !product.price || !product.description || !product.category || !product.discount) {
-      toast.error('Please fill in all required fields');
+
+    // Manual validation for required fields
+    if (!product.name) {
+      toast.error('Please fill in the product name');
+      return;
+    }
+    if (!product.price) {
+      toast.error('Please fill in the product price');
+      return;
+    }
+    if (!product.description) {
+      toast.error('Please fill in the product description');
+      return;
+    }
+    if (!product.category) {
+      toast.error('Please select a category');
+      return;
+    }
+    if (!product.discount) {
+      toast.error('Please fill in the discount percentage');
       return;
     }
 

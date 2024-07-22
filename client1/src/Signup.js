@@ -16,6 +16,25 @@ const Signup = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+    
+    // Validation checks
+    if (!fullName) {
+      toast.error('Please fill in your full name.');
+      return;
+    }
+    if (!email) {
+      toast.error('Please fill in your email.');
+      return;
+    }
+    if (!username) {
+      toast.error('Please fill in your username.');
+      return;
+    }
+    if (!password) {
+      toast.error('Please fill in your password.');
+      return;
+    }
+
     const formData = new FormData();
     formData.append('username', username);
     formData.append('password', password);
@@ -47,7 +66,6 @@ const Signup = () => {
             placeholder="Full Name"
             value={fullName}
             onChange={(e) => setFullName(e.target.value)}
-            required
             className="mb-4 p-2 w-full border rounded"
           />
           <input
@@ -55,7 +73,6 @@ const Signup = () => {
             placeholder="Email"
             value={email}
             onChange={(e) => setEmail(e.target.value)}
-            required
             className="mb-4 p-2 w-full border rounded"
           />
           <input
@@ -63,7 +80,6 @@ const Signup = () => {
             placeholder="Username"
             value={username}
             onChange={(e) => setUsername(e.target.value)}
-            required
             className="mb-4 p-2 w-full border rounded"
           />
           <div className="relative">
@@ -72,7 +88,6 @@ const Signup = () => {
               placeholder="Password"
               value={password}
               onChange={(e) => setPassword(e.target.value)}
-              required
               className="mb-4 p-2 w-full border rounded pr-12"
             />
             <span
@@ -104,7 +119,6 @@ const Signup = () => {
           <select
             value={role}
             onChange={(e) => setRole(e.target.value)}
-            required
             className="mb-4 p-2 w-full border rounded"
           >
             <option value="user">User</option>

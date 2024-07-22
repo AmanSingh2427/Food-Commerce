@@ -13,9 +13,23 @@ const ResetPassword = () => {
   const handleResetPasswordSubmit = async (e) => {
     e.preventDefault();
 
+    // Custom validation for empty fields
+    if (!newPassword) {
+      toast.error('Please fill in the New Password field.');
+      return;
+    }
+    if (!confirmPassword) {
+      toast.error('Please fill in the Confirm Password field.');
+      return;
+    }
+    if (!otp) {
+      toast.error('Please fill in the OTP field.');
+      return;
+    }
+
     // Check if passwords match
     if (newPassword !== confirmPassword) {
-      toast.error("Passwords don't match");
+      toast.error("Passwords don't match.");
       return;
     }
 
@@ -52,7 +66,6 @@ const ResetPassword = () => {
               placeholder="New Password"
               value={newPassword}
               onChange={(e) => setNewPassword(e.target.value)}
-              required
               className="mb-4 p-2 w-full border rounded"
             />
             <input
@@ -60,7 +73,6 @@ const ResetPassword = () => {
               placeholder="Confirm Password"
               value={confirmPassword}
               onChange={(e) => setConfirmPassword(e.target.value)}
-              required
               className="mb-4 p-2 w-full border rounded"
             />
             <input
@@ -68,7 +80,6 @@ const ResetPassword = () => {
               placeholder="Enter OTP"
               value={otp}
               onChange={(e) => setOtp(e.target.value)}
-              required
               className="mb-4 p-2 w-full border rounded"
             />
             <button

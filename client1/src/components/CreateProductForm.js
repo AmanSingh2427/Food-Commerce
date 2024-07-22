@@ -32,8 +32,24 @@ const CreateProductForm = () => {
     }));
   };
 
+  const validateForm = () => {
+    const fields = ['name', 'price', 'photo', 'description', 'category', 'discount'];
+    for (const field of fields) {
+      if (!newProduct[field]) {
+        return `Please fill in the ${field} field.`;
+      }
+    }
+    return null;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+    const validationMessage = validateForm();
+    if (validationMessage) {
+      toast.error(validationMessage);
+      return;
+    }
+
     const formData = new FormData();
     formData.append('name', newProduct.name);
     formData.append('price', newProduct.price);
@@ -76,7 +92,6 @@ const CreateProductForm = () => {
                 value={newProduct.name}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded"
-                required
               />
             </div>
             <div className="mb-4">
@@ -89,7 +104,6 @@ const CreateProductForm = () => {
                 value={newProduct.price}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded"
-                required
               />
             </div>
             <div className="mb-4">
@@ -101,7 +115,6 @@ const CreateProductForm = () => {
                 name="photo"
                 onChange={handleFileChange}
                 className="w-full px-3 py-2 border rounded"
-                required
               />
             </div>
             <div className="mb-4">
@@ -113,7 +126,6 @@ const CreateProductForm = () => {
                 value={newProduct.description}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded"
-                required
               />
             </div>
             <div className="mb-4">
@@ -125,7 +137,6 @@ const CreateProductForm = () => {
                 value={newProduct.category}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded"
-                required
               >
                 <option value="">Select a category</option>
                 <option value="Appetizers">Appetizers</option>
@@ -149,7 +160,6 @@ const CreateProductForm = () => {
                 value={newProduct.discount}
                 onChange={handleInputChange}
                 className="w-full px-3 py-2 border rounded"
-                required
               />
             </div>
             <button

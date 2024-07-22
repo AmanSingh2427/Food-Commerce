@@ -21,8 +21,25 @@ const ContactForm = () => {
     });
   };
 
+  const validateForm = () => {
+    const errors = [];
+    if (!formData.name) errors.push('Name');
+    if (!formData.email) errors.push('Email');
+    if (!formData.food) errors.push('Favorite Food');
+    if (!formData.message) errors.push('Message');
+    
+    return errors;
+  };
+
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    const errors = validateForm();
+    if (errors.length > 0) {
+      toast.error(`Please fill in the following fields: ${errors.join(', ')}`);
+      return;
+    }
+
     try {
       const response = await fetch('http://localhost:5000/api/contact', {
         method: 'POST',
@@ -72,7 +89,6 @@ const ContactForm = () => {
                   value={formData.name}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border rounded"
-                  required
                 />
               </div>
               <div className="mb-4">
@@ -83,7 +99,6 @@ const ContactForm = () => {
                   value={formData.email}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border rounded"
-                  required
                 />
               </div>
               <div className="mb-4">
@@ -94,7 +109,6 @@ const ContactForm = () => {
                   value={formData.food}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border rounded"
-                  required
                 />
               </div>
               <div className="mb-4">
@@ -104,7 +118,6 @@ const ContactForm = () => {
                   value={formData.message}
                   onChange={handleChange}
                   className="w-full px-3 py-2 border rounded"
-                  required
                 ></textarea>
               </div>
               <button type="submit" className="bg-blue-500 text-white px-4 py-2 rounded">

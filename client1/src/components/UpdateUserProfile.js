@@ -3,14 +3,14 @@ import axios from 'axios';
 import { useNavigate } from 'react-router-dom';
 import Navbar from './Navbar';
 import Footer from '../Footer';
+import { ToastContainer, toast } from 'react-toastify';
+import 'react-toastify/dist/ReactToastify.css';
 
 const UpdateProfile = () => {
   const [username, setUsername] = useState('');
   const [email, setEmail] = useState('');
   const [fullName, setFullName] = useState('');
   const [image, setImage] = useState(null);
-  const [notification, setNotification] = useState('');
-
   const navigate = useNavigate();
 
   useEffect(() => {
@@ -35,6 +35,24 @@ const UpdateProfile = () => {
 
   const handleSubmit = async (e) => {
     e.preventDefault();
+
+    // Clear previous validation errors
+    let errors = {};
+    
+    if (!fullName) errors.fullName = 'Full Name is required';
+    if (!email) errors.email = 'Email is required';
+    if (!username) errors.username = 'Username is required';
+
+    // Display toast notifications for validation errors
+    if (errors.fullName) toast.error(errors.fullName);
+    if (errors.email) toast.error(errors.email);
+    if (errors.username) toast.error(errors.username);
+
+    // If there are validation errors, do not proceed with the form submission
+    if (Object.keys(errors).length > 0) {
+      return;
+    }
+
     const formData = new FormData();
     formData.append('username', username);
     formData.append('email', email);
@@ -55,18 +73,15 @@ const UpdateProfile = () => {
       if (response.data.image) {
         localStorage.setItem('userImage', response.data.image);
       }
-      setNotification('Profile updated successfully.');
+      // Display success toast notification
+      toast.success('Profile updated successfully.');
       setTimeout(() => {
-        setNotification('');
         navigate('/home');
       }, 2000);
-      
     } catch (error) {
       console.error(error.response.data.message);
-      setNotification('Failed to update profile.');
-      setTimeout(() => {
-        setNotification('');
-      }, 2000);
+      // Display error toast notification
+      toast.error('Failed to update profile.');
     }
   };
 
@@ -77,18 +92,12 @@ const UpdateProfile = () => {
         <div className="flex justify-center items-center h-screen bg-gray-100 flex-grow">
           <div className="bg-white p-8 rounded shadow-md w-full max-w-md text-center">
             <h2 className="text-2xl font-bold mb-6">Update Profile</h2>
-            {notification && (
-              <div className="bg-green-500 text-white p-2 rounded mb-4">
-                {notification}
-              </div>
-            )}
             <form onSubmit={handleSubmit}>
               <input 
                 type="text" 
                 placeholder="Full Name" 
                 value={fullName} 
                 onChange={(e) => setFullName(e.target.value)} 
-                required 
                 className="mb-4 p-2 w-full border rounded"
               />
               <input 
@@ -96,7 +105,6 @@ const UpdateProfile = () => {
                 placeholder="Email" 
                 value={email} 
                 onChange={(e) => setEmail(e.target.value)} 
-                required 
                 className="mb-4 p-2 w-full border rounded"
               />
               <input 
@@ -104,7 +112,6 @@ const UpdateProfile = () => {
                 placeholder="Username" 
                 value={username} 
                 onChange={(e) => setUsername(e.target.value)} 
-                required 
                 className="mb-4 p-2 w-full border rounded"
               />
               <input
@@ -123,6 +130,7 @@ const UpdateProfile = () => {
         </div>
         <Footer />
       </div>
+      <ToastContainer />
     </>
   );
 };

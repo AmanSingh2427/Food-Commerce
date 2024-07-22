@@ -15,6 +15,17 @@ const LoginForm = () => {
 
   const handleLoginSubmit = async (e) => {
     e.preventDefault();
+
+    // Custom validation for empty fields
+    if (!username) {
+      toast.error('Please fill in the Username field.');
+      return;
+    }
+    if (!password) {
+      toast.error('Please fill in the Password field.');
+      return;
+    }
+
     try {
       const response = await axios.post('http://localhost:5000/login', { username, password });
       localStorage.setItem('userId', response.data.id);
@@ -39,6 +50,13 @@ const LoginForm = () => {
 
   const handleForgotPasswordSubmit = async (e) => {
     e.preventDefault();
+
+    // Custom validation for empty fields
+    if (!email) {
+      toast.error('Please fill in the Email field.');
+      return;
+    }
+
     try {
       const response = await axios.post('http://localhost:5000/forgot-password', { email });
       setIsOtpSent(true);
@@ -50,6 +68,17 @@ const LoginForm = () => {
 
   const handleVerifyOtpSubmit = async (e) => {
     e.preventDefault();
+
+    // Custom validation for empty fields
+    if (!email) {
+      toast.error('Please fill in the Email field.');
+      return;
+    }
+    if (!otp) {
+      toast.error('Please fill in the OTP field.');
+      return;
+    }
+
     try {
       const response = await axios.post('http://localhost:5000/verify-otp', { email, otp });
       toast.success(response.data.message);
@@ -72,7 +101,6 @@ const LoginForm = () => {
                   placeholder="Username"
                   value={username}
                   onChange={(e) => setUsername(e.target.value)}
-                  required
                   className="mb-4 p-2 w-full border rounded"
                 />
                 <input
@@ -80,7 +108,6 @@ const LoginForm = () => {
                   placeholder="Password"
                   value={password}
                   onChange={(e) => setPassword(e.target.value)}
-                  required
                   className="mb-4 p-2 w-full border rounded"
                 />
                 <button
@@ -116,7 +143,6 @@ const LoginForm = () => {
                       placeholder="Enter OTP"
                       value={otp}
                       onChange={(e) => setOtp(e.target.value)}
-                      required
                       className="mb-4 p-2 w-full border rounded"
                     />
                   </>
@@ -127,7 +153,6 @@ const LoginForm = () => {
                       placeholder="Email"
                       value={email}
                       onChange={(e) => setEmail(e.target.value)}
-                      required
                       className="mb-4 p-2 w-full border rounded"
                     />
                   </>
